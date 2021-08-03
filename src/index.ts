@@ -1,17 +1,17 @@
-import hello from './demo';
-import {b, fn} from './a';
+import ImageLoader from './image-loader';
 
-const main = () => {
-    window.console.log(hello);
-    window.alert(hello);
-    [1, 2, 3].forEach((num) => {
-        window.console.log(num);
-    });
-    class a {
+const SRC = 'http://5b0988e595225.cdn.sohucs.com/images/20190122/9903e7691c5b43869f01fdb621afb927.jpeg';
+const loader = new ImageLoader({src: SRC});
 
+declare global{
+    interface Window{
+        loader: ImageLoader;
     }
-    console.log(new a(), b, fn());
-};
+}
 
-
-main();
+window.loader = loader;
+loader.onloaded(() => {
+    const leftRgba = loader.countLeftBorderAverageRGBA();
+    const rightRgba = loader.countRightBorderAverageRGBA();
+    console.log(leftRgba, rightRgba);
+});
