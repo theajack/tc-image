@@ -2,14 +2,19 @@
  * @Author: theajack
  * @Date: 2021-08-04 00:17:03
  * @LastEditor: theajack
- * @LastEditTime: 2021-08-08 10:28:58
+ * @LastEditTime: 2021-08-09 12:04:12
  * @Description: Coding something
- * @FilePath: /tc-image/src/type.d.ts
+ * @FilePath: \tc-image\src\type.d.ts
  */
 
 export interface IPos {
     x: number;
     y: number;
+}
+
+export interface IBlock {
+    start: IPos;
+    end: IPos;
 }
 
 export interface IRGB {

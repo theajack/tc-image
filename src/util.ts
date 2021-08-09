@@ -2,10 +2,10 @@
  * @Author: tackchen
  * @Date: 2021-08-04 11:54:20
  * @LastEditors: tackchen
- * @FilePath: /tc-image/src/util.ts
+ * @FilePath: \tc-image\src\util.ts
  * @Description: Coding something
  */
-import {IPos, IRGBA, IOnLoadedData, IRGB} from './type';
+import {IPos, IRGBA, IOnLoadedData, IRGB, IBlock} from './type';
 import {imageUrlToImage, imageToCanvas, canvasToImageData} from './transform';
 
 export function posToIndex (pos: IPos, imageWidth: number) {
@@ -109,4 +109,61 @@ export async function loadImage (image: string | HTMLImageElement): Promise<IOnL
 
 export function rgbaToStyleString (rgba: IRGBA) {
     return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${alpha255ToAlpha01(rgba.a)})`;
+}
+
+export function randomColorRgb ():IRGB {
+    return {
+        r: randomColorValue(),
+        g: randomColorValue(),
+        b: randomColorValue(),
+    };
+}
+
+export function randomColorValue () {
+    return Math.round(Math.random() * 255);
+}
+
+export function rgbaToColorArray (rgba: IRGBA) {
+    return [
+        rgba.r,
+        rgba.g,
+        rgba.b,
+        rgba.a,
+    ];
+}
+
+export function traverseBlock ({
+    block, callback, size = 1
+}: {
+    block: IBlock
+    callback: (pos: IPos)=>void,
+    size?: number;
+}) {
+    const {start, end} = block;
+    for (let y = start.y; y <= end.y; y += size) {
+        for (let x = start.x; x <= end.x; x += size) {
+            callback({x, y});
+        }
+    }
+}
+
+
+// 服务于高斯模糊算法 提取与中心点的x差的数组
+export function extractBlockXArray (block: IBlock): number[] {
+    const center = extractBlockCenterPos(block);
+    const xArray: number[] = [];
+    traverseBlock({
+        block,
+        callback (pos) {
+            xArray.push(pos.x - center.x);
+        }
+    });
+    return xArray;
+}
+
+export function extractBlockCenterPos (block: IBlock): IPos {
+    return {
+        x: (block.end.x - block.start.x) / 2,
+        y: (block.end.y - block.start.y) / 2
+    };
 }

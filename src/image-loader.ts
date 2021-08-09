@@ -2,9 +2,9 @@
  * @Author: theajack
  * @Date: 2021-07-28 00:31:52
  * @LastEditor: theajack
- * @LastEditTime: 2021-08-08 13:42:50
+ * @LastEditTime: 2021-08-09 12:16:53
  * @Description: Coding something
- * @FilePath: /tc-image/src/image-loader.ts
+ * @FilePath: \tc-image\src\image-loader.ts
  */
 import {
     loadImage,
@@ -12,8 +12,9 @@ import {
     indexToPos,
     countAverageRGBA,
     getRGBAByPos,
+    traverseBlock,
 } from './util';
-import {IPos, IRGBA, IOnLoaded, IOnLoadedData} from './type.d';
+import {IPos, IRGBA, IOnLoaded, IOnLoadedData, IBlock} from './type.d';
 
 export class ImageLoader implements IOnLoadedData {
     imageData: ImageData;
@@ -75,31 +76,15 @@ export class ImageLoader implements IOnLoadedData {
         return getRGBAByPos(pos, this.imageWidth, this.imageData);
     }
 
-    countAreaAverageRGBA (start: IPos, end: IPos) {
+    countBlockAverageRGBA (block: IBlock) {
         const array: IRGBA[] = [];
-        this.traverseArea({
-            start,
-            end,
+        traverseBlock({
+            block,
             callback: (pos) => {
                 array.push(this.getRGBAByPos(pos));
             }
         });
         return countAverageRGBA(array);
-    }
-
-    traverseArea ({
-        start, end, callback, size = 1
-    }: {
-        start: IPos,
-        end: IPos,
-        callback: (pos: IPos)=>void,
-        size?: number;
-    }) {
-        for (let y = start.y; y <= end.y; y += size) {
-            for (let x = start.x; x <= end.x; x += size) {
-                callback({x, y});
-            }
-        }
     }
 
     countOffsetByPos (pos: IPos) {
@@ -108,52 +93,74 @@ export class ImageLoader implements IOnLoadedData {
 
     traverseImageByBlock (
         size: number,
-        callback: (start: IPos, end: IPos)=>void
+        callback: (block: IBlock)=>void
     ) {
-        this.traverseArea({
-            start: {x: 1, y: 1},
-            end: {x: this.imageWidth, y: this.imageHeight},
+        traverseBlock({
+            block: {
+                start: {x: 1, y: 1},
+                end: {x: this.imageWidth, y: this.imageHeight},
+            },
             callback: (start) => {
-                const end:IPos = {
-                    x: start.x + size - 1,
-                    y: start.y + size - 1
-                };
-                if (end.x >  this.imageWidth) {
-                    end.x = this.imageWidth;
-                }
-                if (end.y >  this.imageHeight) {
-                    end.y = this.imageHeight;
-                }
-                callback(start, end);
+                callback({
+                    start,
+                    end: this.checkOutRightBottomBorder({
+                        x: start.x + size - 1,
+                        y: start.y + size - 1
+                    })
+                });
             },
             size
         });
     }
 
+    checkOutRightBottomBorder (pos: IPos) {
+        if (pos.x > this.imageWidth) pos.x = this.imageWidth;
+        if (pos.y > this.imageHeight) pos.y = this.imageHeight;
+        return pos;
+    }
+
+    checkOutLeftTopBorder (pos: IPos) {
+        if (pos.x < 1) pos.x = 1;
+        if (pos.y < 1) pos.y = 1;
+        return pos;
+    }
+
+    getBlockByCenterPos (pos: IPos, radio: number): IBlock {
+        return {
+            start: this.checkOutLeftTopBorder({
+                x: pos.x - radio,
+                y: pos.y - radio,
+            }),
+            end: this.checkOutRightBottomBorder({
+                x: pos.x + radio,
+                y: pos.y + radio,
+            })
+        };
+    }
+
+
     traverseImage (callback: (pos: IPos)=>void) {
-        this.traverseArea({
-            start: {x: 1, y: 1},
-            end: {x: this.imageWidth, y: this.imageHeight},
+        traverseBlock({
+            block: {
+                start: {x: 1, y: 1},
+                end: {x: this.imageWidth, y: this.imageHeight},
+            },
             callback
         });
     }
 
     countLeftBorderAverageRGBA () {
-        return this.countAreaAverageRGBA({
-            x: 1, y: 1
-        }, {
-            x: 1, y: this.imageHeight
+        return this.countBlockAverageRGBA({
+            start: {x: 1, y: 1},
+            end: {x: 1, y: this.imageHeight}
         });
     }
 
     countRightBorderAverageRGBA () {
-        return this.countAreaAverageRGBA({
-            x: this.imageWidth, y: 1
-        }, {
-            x: this.imageWidth, y: this.imageHeight
+        return this.countBlockAverageRGBA({
+            start: {x: this.imageWidth, y: 1},
+            end: {x: this.imageWidth, y: this.imageHeight}
         });
     }
-
-    
 };
 

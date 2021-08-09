@@ -1,14 +1,17 @@
 import {ImageLoader} from './image-loader';
 import {creatEventReady, IEventReady, IEventReadyListener} from './event';
-import {createEmptyCanvas, rgbToGray} from './transform';
-import {IRGBA, IPos, IRGB} from './type';
+import {createEmptyCanvas} from './transform';
+import {IRGBA, IPos} from './type';
+import {rgbaToColorArray, traverseBlock} from './util';
+import {grayRRBA, reverseRGBA} from './filter';
+import {gaussFunc} from './math';
 
 /*
  * @Author: tackchen
  * @Date: 2021-08-08 09:50:51
  * @LastEditors: tackchen
- * @LastEditTime: 2021-08-08 13:48:44
- * @FilePath: /tc-image/src/renderer.ts
+ * @LastEditTime: 2021-08-09 14:12:56
+ * @FilePath: \tc-image\src\renderer.ts
  * @Description: Coding something
  */
 
@@ -69,24 +72,22 @@ export class Renderer {
 
     gray () {
         this.traverse((rgba) => {
-            const gray = rgbToGray(rgba);
-            return [gray, gray, gray, rgba.a];
+            return rgbaToColorArray(grayRRBA(rgba));
         });
     }
 
     reverse () {
         this.traverse((rgba) => {
-            return [255 - rgba.r, 255 - rgba.g, 255 - rgba.b, rgba.a]; // 反色
+            return rgbaToColorArray(reverseRGBA(rgba));
         });
     }
 
-    blur (size = 20) {
-        this.loader.traverseImageByBlock(size, (start, end) => {
-            const rgba = this.loader.countAreaAverageRGBA(start, end);
-            const rgbaArray = [rgba.r, rgba.g, rgba.b, rgba.a];
-            this.loader.traverseArea({
-                start,
-                end,
+    mosaic (size = 20) {
+        this.loader.traverseImageByBlock(size, (block) => {
+            const rgba = this.loader.countBlockAverageRGBA(block);
+            const rgbaArray = rgbaToColorArray(rgba);
+            traverseBlock({
+                block,
                 callback: (pos) => {
                     const offset = this.loader.countOffsetByPos(pos);
                     this.processImageData.data.set(rgbaArray, offset);
@@ -95,38 +96,54 @@ export class Renderer {
         });
         this.context.putImageData(this.processImageData, 0, 0);
     }
-    replaceColor ({
-        target, replacement, range = 10
-    }: {
-        target: IRGB,
-        replacement: IRGB,
-        range?: number
-    }) {
+
+    blur (radio = 5) {
         this.traverse((rgba, pos) => {
-            const throsold = 60;
-            if (
-                Math.abs(rgba.r - 251) <= throsold &&
-                Math.abs(rgba.g - 249) <= throsold &&
-                Math.abs(rgba.b - 252) <= throsold &&
-                pos.y < this.height * 0.3
-            ) {
-                const rgb = randomColorRgb();
-                return [rgb.r, rgb.g, rgb.b, rgba.a];
-            } else {
-                return [rgba.r, rgba.g, rgba.b, rgba.a];
-            }
+            const block = this.loader.getBlockByCenterPos(pos, radio);
+            const aveRgba = this.loader.countBlockAverageRGBA(block);
+            return rgbaToColorArray(aveRgba);
         });
     }
-}
 
-function randomColorRgb ():IRGB {
-    return {
-        r: randomColorValue(),
-        g: randomColorValue(),
-        b: randomColorValue(),
-    };
-}
-
-function randomColorValue () {
-    return Math.round(Math.random() * 255);
+    gaussBlur (radio = 5) {
+        this.traverse((rgba, pos) => {
+            const block = this.loader.getBlockByCenterPos(pos, radio);
+            const gaussMap = gaussFunc(block);
+            const rgbaSum: IRGBA = {r: 0, g: 0, b: 0, a: 0};
+            traverseBlock({
+                block,
+                callback: (pos) => {
+                    const rgba = this.loader.getRGBAByPos(pos);
+                    const gaussWeight = gaussMap[`${pos.x}_${pos.y}`];
+                    rgbaSum.r += (gaussWeight * rgba.r);
+                    rgbaSum.g += (gaussWeight * rgba.g);
+                    rgbaSum.b += (gaussWeight * rgba.b);
+                    rgbaSum.a += (gaussWeight * rgba.a);
+                }
+            });
+            return rgbaToColorArray(rgbaSum);
+        });
+    }
+    // replaceColor ({
+    //     target, replacement, range = 10
+    // }: {
+    //     target: IRGB,
+    //     replacement: IRGB,
+    //     range?: number
+    // }) {
+    //     this.traverse((rgba, pos) => {
+    //         const throsold = 60;
+    //         if (
+    //             Math.abs(rgba.r - 251) <= throsold &&
+    //             Math.abs(rgba.g - 249) <= throsold &&
+    //             Math.abs(rgba.b - 252) <= throsold &&
+    //             pos.y < this.height * 0.3
+    //         ) {
+    //             const rgb = randomColorRgb();
+    //             return [rgb.r, rgb.g, rgb.b, rgba.a];
+    //         } else {
+    //             return [rgba.r, rgba.g, rgba.b, rgba.a];
+    //         }
+    //     });
+    // }
 }
