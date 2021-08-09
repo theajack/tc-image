@@ -5,7 +5,11 @@ module.exports = {
     "window": true,
     "console": true,
     "module": true,
-    "require": true 
+    "require": true,
+    "Promise": true,
+  },
+  env: {
+    "browser": true
   },
   "parserOptions": {
     "sourceType": "module" // ts 中使用 es 模块

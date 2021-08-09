@@ -2,20 +2,20 @@
  * @Author: theajack
  * @Date: 2021-07-28 00:31:52
  * @LastEditor: theajack
- * @LastEditTime: 2021-08-04 12:00:10
+ * @LastEditTime: 2021-08-08 13:42:50
  * @Description: Coding something
- * @FilePath: \tc-image\src\image-loader.ts
+ * @FilePath: /tc-image/src/image-loader.ts
  */
 import {
     loadImage,
     rgbaToHEX,
     indexToPos,
     countAverageRGBA,
-    getRgbaByPos,
+    getRGBAByPos,
 } from './util';
 import {IPos, IRGBA, IOnLoaded, IOnLoadedData} from './type.d';
 
-export default class ImageLoader implements IOnLoadedData {
+export class ImageLoader implements IOnLoadedData {
     imageData: ImageData;
     imageWidth: number;
     imageHeight: number;
@@ -24,15 +24,15 @@ export default class ImageLoader implements IOnLoadedData {
     canvasContext: CanvasRenderingContext2D;
     image: HTMLImageElement;
     constructor ({
-        src, onloaded
+        image, onloaded
     }: {
-        src: string;
+        image: string | HTMLImageElement;
         onloaded?: IOnLoaded
     }) {
         this._loaded_list = [];
         this.imageWidth = 0;
         this.imageHeight = 0;
-        loadImage(src, ({
+        loadImage(image).then(({
             imageData, imageWidth, imageHeight, canvas, canvasContext, image
         }: IOnLoadedData) => {
             this.imageData = imageData;
@@ -71,18 +71,71 @@ export default class ImageLoader implements IOnLoadedData {
         return countAverageRGBA(rgbaArray);
     }
 
-    getRgbaByPos (pos: IPos) {
-        return getRgbaByPos(pos, this.imageWidth, this.imageData);
+    getRGBAByPos (pos: IPos) {
+        return getRGBAByPos(pos, this.imageWidth, this.imageData);
     }
 
-    countAreaAverageRGBA (pos1: IPos, pos2: IPos) {
-        const array = [];
-        for (let x = pos1.x; x <= pos2.x; x++) {
-            for (let y = pos1.y; y <= pos2.y; y++) {
-                array.push(this.getRgbaByPos({x, y}));
+    countAreaAverageRGBA (start: IPos, end: IPos) {
+        const array: IRGBA[] = [];
+        this.traverseArea({
+            start,
+            end,
+            callback: (pos) => {
+                array.push(this.getRGBAByPos(pos));
+            }
+        });
+        return countAverageRGBA(array);
+    }
+
+    traverseArea ({
+        start, end, callback, size = 1
+    }: {
+        start: IPos,
+        end: IPos,
+        callback: (pos: IPos)=>void,
+        size?: number;
+    }) {
+        for (let y = start.y; y <= end.y; y += size) {
+            for (let x = start.x; x <= end.x; x += size) {
+                callback({x, y});
             }
         }
-        return countAverageRGBA(array);
+    }
+
+    countOffsetByPos (pos: IPos) {
+        return (pos.x - 1) * 4 + (pos.y - 1) * 4 * this.imageWidth;
+    }
+
+    traverseImageByBlock (
+        size: number,
+        callback: (start: IPos, end: IPos)=>void
+    ) {
+        this.traverseArea({
+            start: {x: 1, y: 1},
+            end: {x: this.imageWidth, y: this.imageHeight},
+            callback: (start) => {
+                const end:IPos = {
+                    x: start.x + size - 1,
+                    y: start.y + size - 1
+                };
+                if (end.x >  this.imageWidth) {
+                    end.x = this.imageWidth;
+                }
+                if (end.y >  this.imageHeight) {
+                    end.y = this.imageHeight;
+                }
+                callback(start, end);
+            },
+            size
+        });
+    }
+
+    traverseImage (callback: (pos: IPos)=>void) {
+        this.traverseArea({
+            start: {x: 1, y: 1},
+            end: {x: this.imageWidth, y: this.imageHeight},
+            callback
+        });
     }
 
     countLeftBorderAverageRGBA () {

@@ -2,27 +2,27 @@
  * @Author: theajack
  * @Date: 2021-08-04 00:17:03
  * @LastEditor: theajack
- * @LastEditTime: 2021-08-04 00:26:02
+ * @LastEditTime: 2021-08-08 10:28:58
  * @Description: Coding something
- * @FilePath: \tc-image\src\type.d.ts
+ * @FilePath: /tc-image/src/type.d.ts
  */
 
-interface IPos {
+export interface IPos {
     x: number;
     y: number;
 }
 
-interface IRGB {
+export interface IRGB {
     r: number;
     g: number;
     b: number;
 }
 
-interface IRGBA extends IRGB {
+export interface IRGBA extends IRGB {
     a: number;
 }
 
-interface IOnLoadedData {
+export interface IOnLoadedData {
     imageData: ImageData;
     imageWidth: number;
     imageHeight: number;
@@ -31,6 +31,10 @@ interface IOnLoadedData {
     image: HTMLImageElement;
 }
 
-interface IOnLoaded {
+export interface IOnLoaded {
     (options: IOnLoadedData): void;
+}
+
+export interface IJson<T = any> {
+    [prop: string]: T;
 }
