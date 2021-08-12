@@ -1,6 +1,6 @@
 import {Renderer} from '../src';
 
-const SRC = '/img3.jpeg';
+const SRC = '/img2.jpeg';
 // const loader = new ImageLoader({src: SRC});
 
 declare global{
