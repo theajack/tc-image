@@ -10,7 +10,7 @@ import {gaussFunc} from './math';
  * @Author: tackchen
  * @Date: 2021-08-08 09:50:51
  * @LastEditors: tackchen
- * @LastEditTime: 2021-08-12 17:26:51
+ * @LastEditTime: 2021-08-12 17:44:43
  * @FilePath: \tc-image\src\renderer.ts
  * @Description: Coding something
  */
@@ -69,6 +69,26 @@ export class Renderer {
         });
 
         this.context.putImageData(this.processImageData, 0, 0);
+    }
+
+    private traverseFilterColor ({
+        target, callback, throsold = 50
+    }: {
+        target: IRGB,
+        callback: (rgba: IRGBA, pos: IPos)=>number[],
+        throsold?: number,
+    }) {
+        this.traverse((rgba, pos) => {
+            if (
+                Math.abs(rgba.r - target.r) <= throsold &&
+                Math.abs(rgba.g - target.g) <= throsold &&
+                Math.abs(rgba.b - target.b) <= throsold
+            ) {
+                return callback(rgba, pos);
+            } else {
+                return rgbaToColorArray(rgba);
+            }
+        });
     }
 
     gray () {
@@ -145,15 +165,32 @@ export class Renderer {
         replacement: IRGB,
         throsold?: number,
     }) {
-        this.traverse((rgba) => {
-            if (
-                Math.abs(rgba.r - target.r) <= throsold &&
-                Math.abs(rgba.g - target.g) <= throsold &&
-                Math.abs(rgba.b - target.b) <= throsold
-            ) {
+        this.traverseFilterColor({
+            target,
+            throsold,
+            callback: () => {
                 return rgbToColorArray(replacement);
-            } else {
-                return rgbaToColorArray(rgba);
+            }
+        });
+    }
+    replaceColorWithImage ({
+        target, image, throsold = 50
+    }: {
+        target: IRGB,
+        image: HTMLImageElement | string,
+        throsold?: number,
+    }) {
+        const loader = new ImageLoader({
+            image,
+            onloaded: () => {
+                this.traverseFilterColor({
+                    target,
+                    throsold,
+                    callback: (rgba, pos) => {
+                        const replaceRgba = loader.getRGBAByPos(pos);
+                        return rgbToColorArray((typeof replaceRgba.r === 'undefined') ? rgba : replaceRgba);
+                    }
+                });
             }
         });
     }
