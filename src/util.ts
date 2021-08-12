@@ -131,6 +131,11 @@ export function rgbaToColorArray (rgba: IRGBA) {
         rgba.a,
     ];
 }
+export function rgbToColorArray (rgb: IRGB) {
+    const rgba = rgb as IRGBA;
+    rgba.a = 255;
+    return rgbaToColorArray(rgba);
+}
 
 export function traverseBlock ({
     block, callback, size = 1

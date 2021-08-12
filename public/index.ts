@@ -1,12 +1,13 @@
 import {Renderer} from '../src';
 
-const SRC = '/img.jpeg';
+const SRC = '/img3.jpeg';
 // const loader = new ImageLoader({src: SRC});
 
 declare global{
     interface Window{
         render: Renderer;
         gaussFunc: Function;
+        [prop: string]: any;
     }
 }
 
@@ -27,7 +28,7 @@ function main () {
     });
 
     render.onLoaded(() => {
-        const width = '300px';
+        const width = '400px';
 
         const loader = render.loader;
         loader.image.style.width = width;

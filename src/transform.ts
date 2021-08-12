@@ -4,8 +4,8 @@ import {IRGB} from './type';
  * @Author: tackchen
  * @Date: 2021-08-07 15:15:28
  * @LastEditors: tackchen
- * @LastEditTime: 2021-08-08 11:45:53
- * @FilePath: /tc-image/src/transform.ts
+ * @LastEditTime: 2021-08-12 17:26:18
+ * @FilePath: \tc-image\src\transform.ts
  * @Description: Coding something
  */
 
@@ -82,4 +82,29 @@ export function canvasToImageBase64 (canvas: HTMLCanvasElement) {
 // https://www.cnblogs.com/zhangjiansheng/p/6925722.html
 export function rgbToGray (rgb:IRGB) {
     return (rgb.r * 38 + rgb.g * 75 + rgb.b * 15) >> 7;
+}
+
+export function imageBase64ToBlobUrl (base64: string, sliceSize = 512): string {
+    const byteCharacters = atob(base64.split(',')[1]);
+    const contentType = base64.split(',')[0].split(':')[1].split(';')[0];
+
+    const byteArrays = [];
+      
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+        const slice = byteCharacters.slice(offset, offset + sliceSize);
+      
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+        }
+      
+        const byteArray = new window.Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+    }
+      
+    const blob = new Blob(byteArrays, {type: contentType});
+
+    const blobUrl = URL.createObjectURL(blob);
+      
+    return blobUrl;
 }

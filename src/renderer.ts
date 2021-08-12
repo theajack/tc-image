@@ -1,8 +1,8 @@
 import {ImageLoader} from './image-loader';
 import {creatEventReady, IEventReady, IEventReadyListener} from './event';
-import {createEmptyCanvas} from './transform';
-import {IRGBA, IPos} from './type';
-import {rgbaToColorArray, traverseBlock} from './util';
+import {canvasToImageBase64, createEmptyCanvas, imageBase64ToBlobUrl} from './transform';
+import {IRGBA, IPos, IRGB} from './type';
+import {rgbaToColorArray, rgbToColorArray, traverseBlock} from './util';
 import {grayRRBA, reverseRGBA} from './filter';
 import {gaussFunc} from './math';
 
@@ -10,7 +10,7 @@ import {gaussFunc} from './math';
  * @Author: tackchen
  * @Date: 2021-08-08 09:50:51
  * @LastEditors: tackchen
- * @LastEditTime: 2021-08-12 16:36:05
+ * @LastEditTime: 2021-08-12 17:26:51
  * @FilePath: \tc-image\src\renderer.ts
  * @Description: Coding something
  */
@@ -23,6 +23,7 @@ export class Renderer {
     loader: ImageLoader;
     eventReady: IEventReady;
     processImageData: ImageData;
+    private downloadLink: HTMLAnchorElement;
     constructor ({
         container = '',
         image = ''
@@ -105,6 +106,19 @@ export class Renderer {
         });
     }
 
+    download (filename = 'image.png') {
+        if (!this.downloadLink) {
+            this.downloadLink = document.createElement('a');
+            this.downloadLink.setAttribute('style', 'position:fixed;left:-100;opacity:0');
+            this.downloadLink.innerText = 'download';
+            document.body.appendChild(this.downloadLink);
+        }
+        const base64 = canvasToImageBase64(this.canvas);
+        this.downloadLink.href = imageBase64ToBlobUrl(base64);
+        this.downloadLink.download = filename;
+        this.downloadLink.click();
+    }
+
     gaussBlur (radio = 5) {
         const gaussMap = gaussFunc(radio);
         this.traverse((rgba, pos) => {
@@ -124,26 +138,23 @@ export class Renderer {
             return rgbaToColorArray(rgbaSum);
         });
     }
-    // replaceColor ({
-    //     target, replacement, range = 10
-    // }: {
-    //     target: IRGB,
-    //     replacement: IRGB,
-    //     range?: number
-    // }) {
-    //     this.traverse((rgba, pos) => {
-    //         const throsold = 60;
-    //         if (
-    //             Math.abs(rgba.r - 251) <= throsold &&
-    //             Math.abs(rgba.g - 249) <= throsold &&
-    //             Math.abs(rgba.b - 252) <= throsold &&
-    //             pos.y < this.height * 0.3
-    //         ) {
-    //             const rgb = randomColorRgb();
-    //             return [rgb.r, rgb.g, rgb.b, rgba.a];
-    //         } else {
-    //             return [rgba.r, rgba.g, rgba.b, rgba.a];
-    //         }
-    //     });
-    // }
+    replaceColor ({
+        target, replacement, throsold = 50
+    }: {
+        target: IRGB,
+        replacement: IRGB,
+        throsold?: number,
+    }) {
+        this.traverse((rgba) => {
+            if (
+                Math.abs(rgba.r - target.r) <= throsold &&
+                Math.abs(rgba.g - target.g) <= throsold &&
+                Math.abs(rgba.b - target.b) <= throsold
+            ) {
+                return rgbToColorArray(replacement);
+            } else {
+                return rgbaToColorArray(rgba);
+            }
+        });
+    }
 }
