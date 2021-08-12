@@ -10,7 +10,7 @@ import {gaussFunc} from './math';
  * @Author: tackchen
  * @Date: 2021-08-08 09:50:51
  * @LastEditors: tackchen
- * @LastEditTime: 2021-08-09 14:12:56
+ * @LastEditTime: 2021-08-12 16:36:05
  * @FilePath: \tc-image\src\renderer.ts
  * @Description: Coding something
  */
@@ -99,22 +99,22 @@ export class Renderer {
 
     blur (radio = 5) {
         this.traverse((rgba, pos) => {
-            const block = this.loader.getBlockByCenterPos(pos, radio);
+            const block = this.loader.getBlockByCenterPos({pos, radio});
             const aveRgba = this.loader.countBlockAverageRGBA(block);
             return rgbaToColorArray(aveRgba);
         });
     }
 
     gaussBlur (radio = 5) {
+        const gaussMap = gaussFunc(radio);
         this.traverse((rgba, pos) => {
-            const block = this.loader.getBlockByCenterPos(pos, radio);
-            const gaussMap = gaussFunc(block);
+            const block = this.loader.getBlockByCenterPos({pos, radio, checkOutBorder: false});
             const rgbaSum: IRGBA = {r: 0, g: 0, b: 0, a: 0};
             traverseBlock({
                 block,
-                callback: (pos) => {
-                    const rgba = this.loader.getRGBAByPos(pos);
-                    const gaussWeight = gaussMap[`${pos.x}_${pos.y}`];
+                callback: (pos, index) => {
+                    const rgba = this.loader.getRGBAByPos(pos, true);
+                    const gaussWeight = gaussMap[index];
                     rgbaSum.r += (gaussWeight * rgba.r);
                     rgbaSum.g += (gaussWeight * rgba.g);
                     rgbaSum.b += (gaussWeight * rgba.b);

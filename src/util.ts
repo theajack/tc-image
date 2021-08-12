@@ -136,13 +136,15 @@ export function traverseBlock ({
     block, callback, size = 1
 }: {
     block: IBlock
-    callback: (pos: IPos)=>void,
+    callback: (pos: IPos, index: number)=>void,
     size?: number;
 }) {
     const {start, end} = block;
+    let index = 0;
     for (let y = start.y; y <= end.y; y += size) {
         for (let x = start.x; x <= end.x; x += size) {
-            callback({x, y});
+            callback({x, y}, index);
+            index++;
         }
     }
 }
@@ -163,7 +165,7 @@ export function extractBlockXArray (block: IBlock): number[] {
 
 export function extractBlockCenterPos (block: IBlock): IPos {
     return {
-        x: (block.end.x - block.start.x) / 2,
-        y: (block.end.y - block.start.y) / 2
+        x: (block.end.x - block.start.x) / 2 + 1,
+        y: (block.end.y - block.start.y) / 2 + 1
     };
 }

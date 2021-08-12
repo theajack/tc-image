@@ -6,6 +6,7 @@ const SRC = '/img.jpeg';
 declare global{
     interface Window{
         render: Renderer;
+        gaussFunc: Function;
     }
 }
 
@@ -26,7 +27,7 @@ function main () {
     });
 
     render.onLoaded(() => {
-        const width = '500px';
+        const width = '300px';
 
         const loader = render.loader;
         loader.image.style.width = width;

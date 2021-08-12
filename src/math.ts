@@ -6,8 +6,8 @@
  * @Description: Coding something
  */
 
-import {IBlock, IJson, IPos} from './type';
-import {extractBlockXArray, traverseBlock} from './util';
+import {IBlock, IPos} from './type';
+import {extractBlockCenterPos, extractBlockXArray, traverseBlock} from './util';
 
 // 使用原生比使用数组的速度更快
 
@@ -25,26 +25,34 @@ import {extractBlockXArray, traverseBlock} from './util';
  * @param {IBlock} block
  * @return {weightMap}  {IJson<number>} // x_y: weight
  */
-export function gaussFunc (block: IBlock): IJson<number> {
+export function gaussFunc (radio: number): Array<number> {
+    const block: IBlock = {
+        start: {x: 1, y: 1},
+        end: {x: 1 + radio * 2, y: 1 + radio * 2}
+    };
     const data = extractBlockXArray(block); // x坐标与中心点的差值数组
-
     const sd = standardDeviation(data); // 标准差
 
-    const weightMap: IJson<number> = {};
+    const weightMap: number[] = [];
     let weightSum = 0;
+    const center = extractBlockCenterPos(block);
     traverseBlock({
         block,
         callback (pos) {
-            const weight = countGaussWeight(pos, sd);
-            weightMap[`${pos.x}_${pos.y}`] = weight;
-            weightSum += weightSum;
+            const weight = countGaussWeight({
+                x: pos.x - center.x,
+                y: pos.y - center.y
+            }, sd);
+            weightMap.push(weight);
+            weightSum += weight;
         }
     });
-    for (const k in weightMap) {
-        weightMap[k] /= weightSum;
+    for (let i = 0; i < weightMap.length; i++) {
+        weightMap[i] /= weightSum;
     }
     return weightMap;
 }
+window.gaussFunc = gaussFunc;
 
 function countGaussWeight (pos: IPos, sd: number) {
     const k = 1 / (2 * Math.PI * sd);
