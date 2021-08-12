@@ -1,7 +1,7 @@
 import {ImageLoader} from './image-loader';
 import {creatEventReady, IEventReady, IEventReadyListener} from './event';
 import {canvasToImageBase64, createEmptyCanvas, imageBase64ToBlobUrl} from './transform';
-import {IRGBA, IPos, IRGB} from './type';
+import {IRGBA, IPoint, IRGB} from './type';
 import {rgbaToColorArray, rgbToColorArray, traverseBlock} from './util';
 import {grayRRBA, reverseRGBA} from './filter';
 import {gaussFunc} from './math';
@@ -59,11 +59,11 @@ export class Renderer {
         this.eventReady.onEventReady(listener);
     }
 
-    private traverse (callback: (rgba: IRGBA, pos: IPos)=>number[]) {
+    private traverse (callback: (rgba: IRGBA, point: IPoint)=>number[]) {
         let offset = 0;
-        this.loader.traverseImage((pos) => {
-            const rgba = this.loader.getRGBAByPos(pos);
-            const array = callback(rgba, pos);
+        this.loader.traverseImage((point) => {
+            const rgba = this.loader.getRgbaByPoint(point);
+            const array = callback(rgba, point);
             this.processImageData.data.set(array, offset);
             offset += array.length;
         });
@@ -75,16 +75,16 @@ export class Renderer {
         target, callback, throsold = 50
     }: {
         target: IRGB,
-        callback: (rgba: IRGBA, pos: IPos)=>number[],
+        callback: (rgba: IRGBA, point: IPoint)=>number[],
         throsold?: number,
     }) {
-        this.traverse((rgba, pos) => {
+        this.traverse((rgba, point) => {
             if (
                 Math.abs(rgba.r - target.r) <= throsold &&
                 Math.abs(rgba.g - target.g) <= throsold &&
                 Math.abs(rgba.b - target.b) <= throsold
             ) {
-                return callback(rgba, pos);
+                return callback(rgba, point);
             } else {
                 return rgbaToColorArray(rgba);
             }
@@ -105,12 +105,12 @@ export class Renderer {
 
     mosaic (size = 20) {
         this.loader.traverseImageByBlock(size, (block) => {
-            const rgba = this.loader.countBlockAverageRGBA(block);
+            const rgba = this.loader.countBlockAverageRgba(block);
             const rgbaArray = rgbaToColorArray(rgba);
             traverseBlock({
                 block,
-                callback: (pos) => {
-                    const offset = this.loader.countOffsetByPos(pos);
+                callback: (point) => {
+                    const offset = this.loader.countOffsetByPoint(point);
                     this.processImageData.data.set(rgbaArray, offset);
                 }
             });
@@ -119,9 +119,9 @@ export class Renderer {
     }
 
     blur (radio = 5) {
-        this.traverse((rgba, pos) => {
-            const block = this.loader.getBlockByCenterPos({pos, radio});
-            const aveRgba = this.loader.countBlockAverageRGBA(block);
+        this.traverse((rgba, point) => {
+            const block = this.loader.getBlockByCenterPoint({point, radio});
+            const aveRgba = this.loader.countBlockAverageRgba(block);
             return rgbaToColorArray(aveRgba);
         });
     }
@@ -141,13 +141,13 @@ export class Renderer {
 
     gaussBlur (radio = 5) {
         const gaussMap = gaussFunc(radio);
-        this.traverse((rgba, pos) => {
-            const block = this.loader.getBlockByCenterPos({pos, radio, checkOutBorder: false});
+        this.traverse((rgba, point) => {
+            const block = this.loader.getBlockByCenterPoint({point, radio, checkOutBorder: false});
             const rgbaSum: IRGBA = {r: 0, g: 0, b: 0, a: 0};
             traverseBlock({
                 block,
-                callback: (pos, index) => {
-                    const rgba = this.loader.getRGBAByPos(pos, true);
+                callback: (point, index) => {
+                    const rgba = this.loader.getRgbaByPoint(point, true);
                     const gaussWeight = gaussMap[index];
                     rgbaSum.r += (gaussWeight * rgba.r);
                     rgbaSum.g += (gaussWeight * rgba.g);
@@ -186,8 +186,8 @@ export class Renderer {
                 this.traverseFilterColor({
                     target,
                     throsold,
-                    callback: (rgba, pos) => {
-                        const replaceRgba = loader.getRGBAByPos(pos);
+                    callback: (rgba, point) => {
+                        const replaceRgba = loader.getRgbaByPoint(point);
                         return rgbToColorArray((typeof replaceRgba.r === 'undefined') ? rgba : replaceRgba);
                     }
                 });

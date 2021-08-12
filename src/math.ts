@@ -6,8 +6,8 @@
  * @Description: Coding something
  */
 
-import {IBlock, IPos} from './type';
-import {extractBlockCenterPos, extractBlockXArray, traverseBlock} from './util';
+import {IBlock, IPoint} from './type';
+import {extractBlockCenterPoint, extractBlockXArray, traverseBlock} from './util';
 
 // 使用原生比使用数组的速度更快
 
@@ -35,13 +35,13 @@ export function gaussFunc (radio: number): Array<number> {
 
     const weightMap: number[] = [];
     let weightSum = 0;
-    const center = extractBlockCenterPos(block);
+    const center = extractBlockCenterPoint(block);
     traverseBlock({
         block,
-        callback (pos) {
+        callback (point) {
             const weight = countGaussWeight({
-                x: pos.x - center.x,
-                y: pos.y - center.y
+                x: point.x - center.x,
+                y: point.y - center.y
             }, sd);
             weightMap.push(weight);
             weightSum += weight;
@@ -54,9 +54,9 @@ export function gaussFunc (radio: number): Array<number> {
 }
 window.gaussFunc = gaussFunc;
 
-function countGaussWeight (pos: IPos, sd: number) {
+function countGaussWeight (point: IPoint, sd: number) {
     const k = 1 / (2 * Math.PI * sd);
-    const pow = - (pos.x * pos.x + pos.y * pos.y) / (2 * sd);
+    const pow = - (point.x * point.x + point.y * point.y) / (2 * sd);
     return k * Math.pow(Math.E, pow);
 };
 

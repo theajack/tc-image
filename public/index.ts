@@ -13,8 +13,8 @@ declare global{
 
 // window.loader = loader;
 // loader.onloaded(() => {
-//     const leftRgba = loader.countLeftBorderAverageRGBA();
-//     const rightRgba = loader.countRightBorderAverageRGBA();
+//     const leftRgba = loader.countLeftBorderAverageRgba();
+//     const rightRgba = loader.countRightBorderAverageRgba();
 //     console.log(leftRgba, rightRgba);
 //     drawToDocument();
 // });

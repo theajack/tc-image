@@ -2,20 +2,23 @@
  * @Author: theajack
  * @Date: 2021-07-28 00:31:52
  * @LastEditor: theajack
- * @LastEditTime: 2021-08-12 16:22:09
+ * @LastEditTime: 2021-08-12 17:56:12
  * @Description: Coding something
  * @FilePath: \tc-image\src\image-loader.ts
  */
 import {
     loadImage,
-    rgbaToHEX,
-    indexToPos,
-    countAverageRGBA,
-    getRGBAByPos,
+    indexToPoint,
+    countAverageRgba,
+    getRgbaByPoint,
     traverseBlock,
 } from './util';
-import {IPos, IRGBA, IOnLoaded, IOnLoadedData, IBlock} from './type.d';
+import {IPoint, IRGBA, IOnLoaded, IOnLoadedData, IBlock} from './type.d';
 
+/**
+ * point 从 1,1 开始到 this.imageWidth,this.imageHeight 结束
+ * index 从 0 开始
+ */
 export class ImageLoader implements IOnLoadedData {
     imageData: ImageData;
     imageWidth: number;
@@ -60,45 +63,38 @@ export class ImageLoader implements IOnLoadedData {
         }
     }
 
-    rgbaToHEX (rgba: IRGBA) {
-        return rgbaToHEX(rgba);
+    // index 转 point
+    indexToPoint (index: number) {
+        return indexToPoint(index, this.imageWidth);
     }
 
-    indexToPos (index: number) {
-        return indexToPos(index, this.imageWidth);
+    // 通过坐标获取颜色值
+    getRgbaByPoint (point: IPoint, shapePoint = false) {
+        if (shapePoint)  this.shapePoint(point);
+        return getRgbaByPoint(point, this.imageWidth, this.imageData);
     }
 
-    countAverageRGBA (rgbaArray: Array<IRGBA>) {
-        return countAverageRGBA(rgbaArray);
+    // 对 point 进行处理 如果超过边界则取其相对于边界的对称点
+    shapePoint (point: IPoint) {
+        if (point.x <= 0) point.x = -(point.x - 1);
+        if (point.y <= 0) point.y = -(point.y - 1);
+        if (point.x > this.imageWidth) point.x = this.imageWidth - (point.x - this.imageWidth) + 1;
+        if (point.y > this.imageHeight) point.y = this.imageHeight - (point.y - this.imageHeight) + 1;
     }
 
-    getRGBAByPos (pos: IPos, shapePos = false) {
-        if (shapePos) {
-            this.shapePos(pos);
-        }
-        return getRGBAByPos(pos, this.imageWidth, this.imageData);
-    }
-    // 对pos进行处理 如果超过边界则取
-    shapePos (pos: IPos) {
-        if (pos.x <= 0) pos.x = -(pos.x - 1);
-        if (pos.y <= 0) pos.y = -(pos.y - 1);
-        if (pos.x > this.imageWidth) pos.x = this.imageWidth - (pos.x - this.imageWidth) + 1;
-        if (pos.y > this.imageHeight) pos.y = this.imageHeight - (pos.y - this.imageHeight) + 1;
-    }
-
-    countBlockAverageRGBA (block: IBlock) {
+    countBlockAverageRgba (block: IBlock) {
         const array: IRGBA[] = [];
         traverseBlock({
             block,
-            callback: (pos) => {
-                array.push(this.getRGBAByPos(pos));
+            callback: (point) => {
+                array.push(this.getRgbaByPoint(point));
             }
         });
-        return countAverageRGBA(array);
+        return countAverageRgba(array);
     }
 
-    countOffsetByPos (pos: IPos) {
-        return (pos.x - 1) * 4 + (pos.y - 1) * 4 * this.imageWidth;
+    countOffsetByPoint (point: IPoint) {
+        return (point.x - 1) * 4 + (point.y - 1) * 4 * this.imageWidth;
     }
 
     traverseImageByBlock (
@@ -123,41 +119,41 @@ export class ImageLoader implements IOnLoadedData {
         });
     }
 
-    checkOutRightBottomBorder (pos: IPos, checkOutBorder: boolean = true) {
+    checkOutRightBottomBorder (point: IPoint, checkOutBorder: boolean = true) {
         if (checkOutBorder) {
-            if (pos.x > this.imageWidth) pos.x = this.imageWidth;
-            if (pos.y > this.imageHeight) pos.y = this.imageHeight;
+            if (point.x > this.imageWidth) point.x = this.imageWidth;
+            if (point.y > this.imageHeight) point.y = this.imageHeight;
         }
-        return pos;
+        return point;
     }
 
-    checkOutLeftTopBorder (pos: IPos, checkOutBorder: boolean = true) {
+    checkOutLeftTopBorder (point: IPoint, checkOutBorder: boolean = true) {
         if (checkOutBorder) {
-            if (pos.x < 1) pos.x = 1;
-            if (pos.y < 1) pos.y = 1;
+            if (point.x < 1) point.x = 1;
+            if (point.y < 1) point.y = 1;
         }
-        return pos;
+        return point;
     }
 
-    getBlockByCenterPos ({
-        pos, radio, checkOutBorder = true
+    getBlockByCenterPoint ({
+        point, radio, checkOutBorder = true
     }: {
-        pos: IPos, radio: number, checkOutBorder?: boolean
+        point: IPoint, radio: number, checkOutBorder?: boolean
     }): IBlock {
         return {
             start: this.checkOutLeftTopBorder({
-                x: pos.x - radio,
-                y: pos.y - radio,
+                x: point.x - radio,
+                y: point.y - radio,
             }, checkOutBorder),
             end: this.checkOutRightBottomBorder({
-                x: pos.x + radio,
-                y: pos.y + radio,
+                x: point.x + radio,
+                y: point.y + radio,
             }, checkOutBorder)
         };
     }
 
 
-    traverseImage (callback: (pos: IPos)=>void) {
+    traverseImage (callback: (point: IPoint)=>void) {
         traverseBlock({
             block: {
                 start: {x: 1, y: 1},
@@ -167,26 +163,26 @@ export class ImageLoader implements IOnLoadedData {
         });
     }
 
-    countLeftBorderAverageRGBA () {
-        return this.countBlockAverageRGBA({
+    countLeftBorderAverageRgba () {
+        return this.countBlockAverageRgba({
             start: {x: 1, y: 1},
             end: {x: 1, y: this.imageHeight}
         });
     }
 
-    countRightBorderAverageRGBA () {
-        return this.countBlockAverageRGBA({
+    countRightBorderAverageRgba () {
+        return this.countBlockAverageRgba({
             start: {x: this.imageWidth, y: 1},
             end: {x: this.imageWidth, y: this.imageHeight}
         });
     }
 
-    checkPosOutBorder (pos: IPos) {
+    checkPointOutBorder (point: IPoint) {
         return (
-            pos.x <= 0 ||
-            pos.y <= 0 ||
-            pos.x > this.imageWidth ||
-            pos.y > this.imageHeight
+            point.x <= 0 ||
+            point.y <= 0 ||
+            point.x > this.imageWidth ||
+            point.y > this.imageHeight
         );
     }
 };

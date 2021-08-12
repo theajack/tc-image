@@ -5,15 +5,15 @@
  * @FilePath: \tc-image\src\util.ts
  * @Description: Coding something
  */
-import {IPos, IRGBA, IOnLoadedData, IRGB, IBlock} from './type';
+import {IPoint, IRGBA, IOnLoadedData, IRGB, IBlock} from './type';
 import {imageUrlToImage, imageToCanvas, canvasToImageData} from './transform';
 
-export function posToIndex (pos: IPos, imageWidth: number) {
-    const order = (pos.y - 1) * imageWidth + (pos.x - 1);
+export function pointToIndex (point: IPoint, imageWidth: number) {
+    const order = (point.y - 1) * imageWidth + (point.x - 1);
     return order * 4;
 }
 
-export function indexToPos (index: number, imageWidth: number): IPos {
+export function indexToPoint (index: number, imageWidth: number): IPoint {
     const order = Math.floor(index / 4);
     return {
         x: order % imageWidth + 1, // 横坐标
@@ -21,7 +21,7 @@ export function indexToPos (index: number, imageWidth: number): IPos {
     };
 }
 
-export function getRGBAByIndex (index: number, imageData: ImageData): IRGBA {
+export function getRgbaByIndex (index: number, imageData: ImageData): IRGBA {
     return {
         r: imageData.data[index],
         g: imageData.data[index + 1],
@@ -34,22 +34,22 @@ export function alpha255ToAlpha01 (alpha255: number) {
     return Math.round(alpha255 / 255 * 100) / 100; // alpha 值
 }
 
-export function getRGBAByPos (pos: IPos, imageWidth: number, imageData: ImageData) {
-    return getRGBAByIndex(posToIndex(pos, imageWidth), imageData);
+export function getRgbaByPoint (point: IPoint, imageWidth: number, imageData: ImageData) {
+    return getRgbaByIndex(pointToIndex(point, imageWidth), imageData);
 }
 
-export function countAverageRGBA (rgbArr: IRGB[]): IRGBA {
+export function countAverageRgba (rgbArr: IRGB[]): IRGBA {
     const rgbaTotal = countRGBATotal(rgbArr as IRGBA[]);
     const count = rgbArr.length;
-    const rgba = countAverageRGBWithRGBTotal(rgbaTotal, count) as IRGBA;
+    const rgba = countAverageRgbWithRgbTotal(rgbaTotal, count) as IRGBA;
     rgba.a = Math.floor(rgbaTotal.a / count);
     return rgba;
 
 }
 
-export function countAverageRGB (rgbaArr: IRGBA[]) {
+export function countAverageRgb (rgbaArr: IRGBA[]) {
     const rgbaTotal = countRGBATotal(rgbaArr);
-    return countAverageRGBWithRGBTotal(rgbaTotal, rgbaArr.length);
+    return countAverageRgbWithRgbTotal(rgbaTotal, rgbaArr.length);
 }
 
 function countRGBATotal (rgbaArr: IRGBA[]): IRGBA {
@@ -64,7 +64,7 @@ function countRGBATotal (rgbaArr: IRGBA[]): IRGBA {
     return rgbTotal;
 }
 
-function countAverageRGBWithRGBTotal (rgbTotal: IRGB, count: number): IRGB {
+function countAverageRgbWithRgbTotal (rgbTotal: IRGB, count: number): IRGB {
     return {
         r: Math.floor(rgbTotal.r / count),
         g: Math.floor(rgbTotal.g / count),
@@ -141,7 +141,7 @@ export function traverseBlock ({
     block, callback, size = 1
 }: {
     block: IBlock
-    callback: (pos: IPos, index: number)=>void,
+    callback: (point: IPoint, index: number)=>void,
     size?: number;
 }) {
     const {start, end} = block;
@@ -157,18 +157,18 @@ export function traverseBlock ({
 
 // 服务于高斯模糊算法 提取与中心点的x差的数组
 export function extractBlockXArray (block: IBlock): number[] {
-    const center = extractBlockCenterPos(block);
+    const center = extractBlockCenterPoint(block);
     const xArray: number[] = [];
     traverseBlock({
         block,
-        callback (pos) {
-            xArray.push(pos.x - center.x);
+        callback (point) {
+            xArray.push(point.x - center.x);
         }
     });
     return xArray;
 }
 
-export function extractBlockCenterPos (block: IBlock): IPos {
+export function extractBlockCenterPoint (block: IBlock): IPoint {
     return {
         x: (block.end.x - block.start.x) / 2 + 1,
         y: (block.end.y - block.start.y) / 2 + 1

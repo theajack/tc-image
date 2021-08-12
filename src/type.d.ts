@@ -7,14 +7,14 @@
  * @FilePath: \tc-image\src\type.d.ts
  */
 
-export interface IPos {
+export interface IPoint {
     x: number;
     y: number;
 }
 
 export interface IBlock {
-    start: IPos;
-    end: IPos;
+    start: IPoint;
+    end: IPoint;
 }
 
 export interface IRGB {
