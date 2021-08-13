@@ -13,7 +13,7 @@ import {
     getRgbaByPoint,
     traverseBlock,
 } from './util';
-import {IPoint, IRGBA, IOnLoaded, IOnLoadedData, IBlock} from './type.d';
+import {IPoint, IRGBA, IOnLoaded, IOnLoadedData, IBlock} from './types/type';
 
 /**
  * point 从 1,1 开始到 this.imageWidth,this.imageHeight 结束

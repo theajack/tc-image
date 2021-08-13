@@ -7,7 +7,7 @@
  */
 
 import {rgbToGray} from './transform';
-import {IRGBA} from './type';
+import {IRGBA} from './types/type';
 
 export function reverseRGBA (rgba: IRGBA) {
     rgba.r = 255 - rgba.r;

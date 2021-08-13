@@ -2,9 +2,9 @@
  * @Author: theajack
  * @Date: 2021-08-04 00:17:03
  * @LastEditor: theajack
- * @LastEditTime: 2021-08-09 12:04:12
+ * @LastEditTime: 2021-08-13 14:23:31
  * @Description: Coding something
- * @FilePath: \tc-image\src\type.d.ts
+ * @FilePath: \tc-image\src\types\type.d.ts
  */
 
 export interface IPoint {

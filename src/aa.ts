@@ -1,5 +1,8 @@
 
-
+export const a = 12;
+ 
+export const b = 33;
+export const cc = 33;
 // import Encoder from './lib/encode';
 // import Decoder from './lib/decode';
 // import version from './version';

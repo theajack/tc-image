@@ -1,4 +1,6 @@
 import {Renderer} from '../src';
+import {importWasm} from '../src/wasm/loader';
+import '../src/utils/time-log';
 
 const SRC = '/img2.jpeg';
 // const loader = new ImageLoader({src: SRC});
@@ -19,9 +21,16 @@ declare global{
 //     drawToDocument();
 // });
 
-main();
+// main();
 
-function main () {
+testAsmScript();
+
+export async function testAsmScript () {
+    const module = await importWasm();
+    window.module = module;
+}
+
+export function main () {
 
     const render = new Renderer({
         image: SRC

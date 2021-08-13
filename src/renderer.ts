@@ -1,7 +1,7 @@
 import {ImageLoader} from './image-loader';
 import {creatEventReady, IEventReady, IEventReadyListener} from './event';
 import {canvasToImageBase64, createEmptyCanvas, imageBase64ToBlobUrl} from './transform';
-import {IRGBA, IPoint, IRGB} from './type';
+import {IRGBA, IPoint, IRGB} from './types/type';
 import {rgbaToColorArray, rgbToColorArray, traverseBlock} from './util';
 import {grayRRBA, reverseRGBA} from './filter';
 import {gaussFunc} from './math';

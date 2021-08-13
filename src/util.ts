@@ -5,7 +5,7 @@
  * @FilePath: \tc-image\src\util.ts
  * @Description: Coding something
  */
-import {IPoint, IRGBA, IOnLoadedData, IRGB, IBlock} from './type';
+import {IPoint, IRGBA, IOnLoadedData, IRGB, IBlock} from './types/type';
 import {imageUrlToImage, imageToCanvas, canvasToImageData} from './transform';
 
 export function pointToIndex (point: IPoint, imageWidth: number) {

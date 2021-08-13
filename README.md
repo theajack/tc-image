@@ -34,3 +34,6 @@ npm run build
 
 
 项目中有一些用不到的东西可以删除，代码就不介绍了，后面就到你自己发挥啦！
+
+
+node ./node_modules/onchange/dist/bin.js -i 'src/wasm/lib/**/*' -- node ./helper/build-asm.js

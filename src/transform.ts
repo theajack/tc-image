@@ -1,4 +1,4 @@
-import {IRGB} from './type';
+import {IRGB} from './types/type';
 
 /*
  * @Author: tackchen

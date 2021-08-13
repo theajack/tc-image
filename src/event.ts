@@ -2,11 +2,11 @@
  * @Author: tackchen
  * @Date: 2021-08-08 10:27:31
  * @LastEditors: tackchen
- * @LastEditTime: 2021-08-08 10:33:26
- * @FilePath: /tc-image/src/event.ts
+ * @LastEditTime: 2021-08-13 11:38:28
+ * @FilePath: \tc-image\src\event.ts
  * @Description: Coding something
  */
-import {IJson} from './type';
+import {IJson} from './types/type';
 
 /* 创建一个简单的事件队列
 let e = creatEventReady();

@@ -6,7 +6,7 @@
  * @Description: Coding something
  */
 
-import {IBlock, IPoint} from './type';
+import {IBlock, IPoint} from './types/type';
 import {extractBlockCenterPoint, extractBlockXArray, traverseBlock} from './util';
 
 // 使用原生比使用数组的速度更快
