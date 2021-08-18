@@ -7,9 +7,12 @@ module.exports = {
     "module": true,
     "require": true,
     "Promise": true,
+    "idof": true,
+    "Uint8Array": true,
   },
   env: {
-    "browser": true
+    "browser": true,
+    "node": true
   },
   "parserOptions": {
     "sourceType": "module" // ts 中使用 es 模块

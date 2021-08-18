@@ -40,6 +40,7 @@ async function exec (cmd) {
         });
     });
 }
+
 module.exports = {
     read,
     write,
