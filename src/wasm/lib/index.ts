@@ -1,59 +1,145 @@
 // The entry file of your WebAssembly module.
-
+const RGBA_LENGTH: i8 = 4;
 export const UInt8Array_ID = idof<Uint8Array>();
 
-function getRgbaByIndex (imageData: Uint8Array, index: number): u8[] {
-    
-}
+export const Float32Array_ID = idof<Float32Array>();
 
-function getPointByIndex (
-    index: number,
-    width: number,
-): number[] {
-    const pIndex = index / 4;
-    return [Math.floor(pIndex / width), pIndex % width];
-}
-
-function getBlockByCenterIndex (
-    index: number,
-    width: number,
-    radio: number
-): number[] {
-    const point = getPointByIndex(index, width);
-
-    return [];
-}
-
-export function gaussBlur (
-    map: number[],
-    imageData: Uint8Array,
-    width: number,
-    height: number,
-    radio: number
-): u8[] {
-    const newImageData: u8 = [];
-    const size = imageData.length / 4;
-    for (let i = 0; i < size; i += 4) {
-
-        const point = getPointByIndex(i, width);
-
-        const x = point[0];
-        const y = point[1];
-        
-    }
-
-}
-
-// export function traverseBlock2 (imageData: Uint8Array): u8[] {
-//     const data: u8[] = [];
-//     for (let i = 0; i < imageData.length; i += 4) {
-//         data.push(255 - imageData[i]);
-//         data.push(255 - imageData[i + 1]);
-//         data.push(255 - imageData[i + 2]);
-//         data.push(imageData[i + 3]);
-//     }
-//     return data;
+// export function testArray (u81: u8[], u82: u8[], num: u8): u8 {
+//     u81[0] = 100;
+//     u82[0] = num;
+//     return u81[0] + u82[0];
 // }
+/*
+asmLoader.transform.asmU8ArrToU8Arr(
+    asmLoader.module.getRgbaByIndex(
+        asmLoader.transform.arrToAsmU8Arr([1,2,3,4,5,6,7,8]),
+        4
+    )
+)
+[5,6,7,8]
+ */
+
+export function getRgbaByIndex (imageData: Uint8Array, index: i32): Uint8Array {
+    // return imageData.length;
+    const arr: Uint8Array = new Uint8Array(4);
+    for (let i: i8 = 0; i < RGBA_LENGTH; i++) {
+        arr[i] = imageData[index + i];
+    }
+    return arr;
+}
+
+/*
+asmLoader.transform.asmI32ArrToI32Arr(
+    asmLoader.module.indexToPoint(20, 3)
+)
+[2, 1]
+ */
+// x y 都是从零开始
+export function indexToPoint (
+    index: i32,
+    width: i32,
+): i32[] {
+    const pIndex = index / 4;
+    return [pIndex % width, Math.floor(pIndex / width) as i32, ];
+}
+
+/*
+asmLoader.module.pointToIndex(2, 1, 3, 3) // = 20
+asmLoader.module.pointToIndex(-2, -1, 3, 3) // = 20
+asmLoader.module.pointToIndex(2, 4, 3, 3) // = 8
+ */
+export function pointToIndex (
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+): i32 {
+    return getReplaceAxis(y, height) * width * 4 + getReplaceAxis(x, width) * 4;
+}
+/*
+asmLoader.module.getReplaceAxis(4, 3) // = 20
+ */
+export function getReplaceAxis (n: i32, size: i32): i32 {
+    if (n < 0) {return -n;}
+    if (n >= size) {return 2 * size - n - 2;} // (size - 1) - (n - (size - 1))
+    return n;
+}
+/**
+ *
+asmLoader.transform.asmI32ArrToI32Arr(
+    asmLoader.module.getBlockByCenterIndex(16, 3, 3, 1)
+)
+[0, 4, 8, 12, 16, 20, 24, 28, 32]
+ */
+export function getBlockByCenterIndex (
+    index: i32,
+    width: i32,
+    height: i32,
+    radio: i32
+): Int32Array {
+    const point = indexToPoint(index, width);
+    const size = (radio * 2 + 1) * (radio * 2 + 1);
+    // eslint-disable-next-line no-undef
+    const block: Int32Array = new Int32Array(size);
+    // const block: i32[] = [];
+
+    let offset = 0;
+    for (let y = point[1] - radio; y <= point[1] + radio; y ++) {
+        for (let x = point[0] - radio; x <= point[0] + radio; x ++) {
+            block[offset] = pointToIndex(x, y, width, height);
+            offset++;
+            // block.push(pointToIndex(x, y, width, height));
+        }
+    }
+    return block;
+    // return block.slice(0, size);
+}
+ 
+export function gaussBlur (
+    map: f32[],
+    imageData: Uint8Array,
+    width: i32,
+    height: i32,
+    radio: i32
+): Uint8Array {
+    const size = width * height;
+    const newImageData: Uint8Array = new Uint8Array(size * 4);
+    for (let index = 0; index < size * 4; index += 4) {
+
+        // const rgbaSum: f32[] = [1, 2, 3, 4];
+        // eslint-disable-next-line no-undef
+        const rgbaSum: Float32Array = new Float32Array(RGBA_LENGTH);
+        const block = getBlockByCenterIndex(index, width, height, radio);
+        // rgbaSum[0] = block.length as f32;
+        for (let i = 0; i < block.length; i++) {
+            const bindex = block[i];
+            const brgba = getRgbaByIndex(imageData, bindex);
+
+            for (let j: i8 = 0; j < RGBA_LENGTH; j++) {
+                rgbaSum[j] += brgba[j] * map[index + j];
+            }
+        }
+ 
+        // rgbaSum[0] += 0.1 * 100;
+        // todo 计算有问题
+        for (let j: i8 = 0; j < RGBA_LENGTH; j++) {
+            newImageData[index + j] = rgbaSum[j] as u8;
+            // newImageData.push(rgbaSum[j] as u8);
+        }
+    }
+    return newImageData;
+}
+
+export function traverseBlock2 (imageData: Uint8Array): u8[] {
+    const data: u8[] = [];
+    for (let i = 0; i < imageData.length; i += 4) {
+        data.push(255 - imageData[i]);
+        data.push(255 - imageData[i + 1]);
+        data.push(255 - imageData[i + 2]);
+        data.push(imageData[i + 3]);
+    }
+    return data;
+}
 
 
 // export function traverseBlock (imageData: u8[]): Uint8Array {

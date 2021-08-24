@@ -1,5 +1,5 @@
 import {Renderer} from '../src';
-import {importWasm} from '../src/wasm/loader';
+import {asmLoader} from '../src/wasm/loader';
 import '../src/utils/time-log';
 
 const SRC = '/img2.jpeg';
@@ -26,8 +26,8 @@ declare global{
 testAsmScript();
 
 export async function testAsmScript () {
-    const module = await importWasm();
-    window.module = module;
+    await asmLoader.import();
+    window.asmLoader = asmLoader;
 }
 
 export function main () {

@@ -2,7 +2,7 @@
  * @Author: tackchen
  * @Date: 2021-08-09 11:01:30
  * @LastEditors: tackchen
- * @FilePath: \tc-image\src\math.ts
+ * @FilePath: /tc-image/src/math.ts
  * @Description: Coding something
  */
 
@@ -19,8 +19,6 @@ import {extractBlockCenterPoint, extractBlockXArray, traverseBlock} from './util
 
 
 /**
- *
- *
  * @export
  * @param {IBlock} block
  * @return {weightMap}  {IJson<number>} // x_y: weight
