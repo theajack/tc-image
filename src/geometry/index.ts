@@ -2,12 +2,12 @@
  * @Author: theajack
  * @Date: 2021-08-12 23:18:21
  * @LastEditor: theajack
- * @LastEditTime: 2021-08-12 23:56:14
+ * @LastEditTime: 2021-08-25 21:00:01
  * @Description: Coding something
- * @FilePath: \tc-image\src\geometry\index.ts
+ * @FilePath: /tc-image/src/geometry/index.ts
  */
 
-import {IPoints} from './graph/graphs';
+import {IPoints} from '../types/graph';
 import {Point} from './graph/point';
 import {Polygon} from './graph/polygon';
 

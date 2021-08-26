@@ -24,6 +24,7 @@ declare global{
 // main();
 
 testAsmScript();
+main();
 
 export async function testAsmScript () {
     await asmLoader.import();

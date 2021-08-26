@@ -26,7 +26,7 @@ async function importWasm () {
     return exports;
 }
 
-function arrToAsmU8Arr (array: number[]): number[] {
+function arrToAsmU8Arr (array: number[] | Uint8Array): number[] {
     return asmModule.__newArray(asmModule.UInt8Array_ID, array);
 }
 
@@ -42,6 +42,10 @@ function asmI32ArrToI32Arr (address: number): Int32Array {
     return asmModule.__getInt32Array(address);
 }
 
+function asmF32ArrToF32Arr (address: number): Float32Array {
+    return asmModule.__getFloat32Array(address);
+}
+
 export const asmLoader = {
     import: importWasm,
     module: asmModule,
@@ -50,6 +54,7 @@ export const asmLoader = {
         arrToAsmF32Arr,
         asmU8ArrToU8Arr,
         asmI32ArrToI32Arr,
+        asmF32ArrToF32Arr,
     },
 
 };

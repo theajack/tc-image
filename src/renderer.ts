@@ -10,8 +10,8 @@ import {gaussFunc} from './math';
  * @Author: tackchen
  * @Date: 2021-08-08 09:50:51
  * @LastEditors: tackchen
- * @LastEditTime: 2021-08-12 17:44:43
- * @FilePath: \tc-image\src\renderer.ts
+ * @LastEditTime: 2021-08-25 21:09:10
+ * @FilePath: /tc-image/src/renderer.ts
  * @Description: Coding something
  */
 
@@ -68,6 +68,15 @@ export class Renderer {
             offset += array.length;
         });
 
+        this.putProcessDataIntoCanvas();
+    }
+
+    setImageData (data: Uint8Array) {
+        this.processImageData.data.set(data, 0);
+        this.putProcessDataIntoCanvas();
+    }
+
+    private putProcessDataIntoCanvas () {
         this.context.putImageData(this.processImageData, 0, 0);
     }
 
@@ -115,7 +124,7 @@ export class Renderer {
                 }
             });
         });
-        this.context.putImageData(this.processImageData, 0, 0);
+        this.putProcessDataIntoCanvas();
     }
 
     blur (radio = 5) {
@@ -137,6 +146,21 @@ export class Renderer {
         this.downloadLink.href = imageBase64ToBlobUrl(base64);
         this.downloadLink.download = filename;
         this.downloadLink.click();
+    }
+
+    gaussBlur2 (radio = 5) {
+        const gaussMap = gaussFunc(radio);
+        const asmLoader = window.asmLoader;
+        const newImageData: Uint8Array = asmLoader.transform.asmU8ArrToU8Arr(
+            asmLoader.module.gaussBlur(
+                asmLoader.transform.arrToAsmF32Arr(gaussMap),
+                asmLoader.transform.arrToAsmU8Arr(this.loader.imageData.data),
+                this.width,
+                this.height,
+                radio
+            )
+        );
+        this.setImageData(newImageData);
     }
 
     gaussBlur (radio = 5) {

@@ -9,6 +9,7 @@ module.exports = {
     "Promise": true,
     "idof": true,
     "Uint8Array": true,
+    "Float32Array": true,
   },
   env: {
     "browser": true,

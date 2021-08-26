@@ -102,12 +102,11 @@ export function gaussBlur (
     height: i32,
     radio: i32
 ): Uint8Array {
-    const size = width * height;
+    const size = width * height; // 像素点个数
     const newImageData: Uint8Array = new Uint8Array(size * 4);
-    for (let index = 0; index < size * 4; index += 4) {
+    for (let index = 0; index < size * 4; index += 4) { // 对像素遍历
 
         // const rgbaSum: f32[] = [1, 2, 3, 4];
-        // eslint-disable-next-line no-undef
         const rgbaSum: Float32Array = new Float32Array(RGBA_LENGTH);
         const block = getBlockByCenterIndex(index, width, height, radio);
         // rgbaSum[0] = block.length as f32;
@@ -116,15 +115,18 @@ export function gaussBlur (
             const brgba = getRgbaByIndex(imageData, bindex);
 
             for (let j: i8 = 0; j < RGBA_LENGTH; j++) {
-                rgbaSum[j] += brgba[j] * map[index + j];
+                rgbaSum[j] += brgba[j] * map[i];
             }
         }
  
-        // rgbaSum[0] += 0.1 * 100;
-        // todo 计算有问题
         for (let j: i8 = 0; j < RGBA_LENGTH; j++) {
-            newImageData[index + j] = rgbaSum[j] as u8;
-            // newImageData.push(rgbaSum[j] as u8);
+            if (rgbaSum[j] > 255) {
+                rgbaSum[j] = 255;
+            } else if (rgbaSum[j] < 0) {
+                rgbaSum[j] = 0;
+            }
+            newImageData[index + j] = Math.round(rgbaSum[j]) as u8;
+            // newImageData[index + j] = 111;
         }
     }
     return newImageData;
