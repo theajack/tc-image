@@ -1,17 +1,18 @@
 import {ImageLoader} from './image-loader';
-import {creatEventReady, IEventReady, IEventReadyListener} from './event';
-import {canvasToImageBase64, createEmptyCanvas, imageBase64ToBlobUrl} from './transform';
-import {IRGBA, IPoint, IRGB} from './types/type';
-import {rgbaToColorArray, rgbToColorArray, traverseBlock} from './util';
+import {creatEventReady, IEventReady, IEventReadyListener} from '../utils/event';
+import {canvasToImageBase64, createEmptyCanvas, imageBase64ToBlobUrl} from '../utils/transform';
+import {IRGBA, IPoint, IRGB, ISize, IOptionSize, IBlock} from '../types/type';
+import {rgbaToColorArray, rgbToColorArray, traverseBlock, countScaleMap} from '../utils/util';
 import {grayRRBA, reverseRGBA} from './filter';
-import {gaussFunc} from './math';
+import {gaussFunc} from '../utils/math';
+import {Rotater} from './render-rotater';
 
 /*
  * @Author: tackchen
  * @Date: 2021-08-08 09:50:51
  * @LastEditors: tackchen
- * @LastEditTime: 2021-08-25 21:09:10
- * @FilePath: /tc-image/src/renderer.ts
+ * @LastEditTime: 2021-08-30 00:17:24
+ * @FilePath: /tc-image/src/render/renderer.ts
  * @Description: Coding something
  */
 
@@ -20,39 +21,63 @@ export class Renderer {
     context: CanvasRenderingContext2D;
     width: number;
     height: number;
+    originWidth: number;
+    originHeight: number;
+    rate: number;
     loader: ImageLoader;
     eventReady: IEventReady;
     processImageData: ImageData;
+    rotater: Rotater;
     private downloadLink: HTMLAnchorElement;
     constructor ({
         container = '',
-        image = ''
+        image = '',
+        oninited
     }: {
-        width?: number;
-        height?: number;
         container?: string;
-        image: string | HTMLImageElement
+        image: string | HTMLImageElement;
+        oninited?: () => void;
     }) {
-
+        // loaded 后于 inited 执行
         this.eventReady = creatEventReady();
         this.loader = new ImageLoader({
             image,
             onloaded: () => {
-                this.width = this.loader.imageWidth;
-                this.height = this.loader.imageHeight;
-                this.processImageData = new ImageData(this.width, this.height);
-                const {canvas, context} = createEmptyCanvas(this.width, this.height);
+                const width = this.loader.imageWidth;
+                const height = this.loader.imageHeight;
+                this.originWidth = width;
+                this.originHeight = height;
+                this.initRenderSize({width, height});
+                this.context.drawImage(this.loader.image, 0, 0, width, height);
+                this.eventReady.eventReady();
+            },
+            oninited: () => {
+                const width = this.loader.imageWidth;
+                const height = this.loader.imageHeight;
+                const {canvas, context} = createEmptyCanvas(width, height);
                 this.canvas = canvas;
                 this.context = context;
-                
-                this.context.drawImage(this.loader.image, 0, 0, this.width, this.height);
                 if (container) {
                     document.querySelector(container)?.appendChild(this.canvas);
                 }
-                this.eventReady.eventReady();
+                if (oninited) {oninited();}
             }
         });
-        
+        this.rotater = new Rotater(this);
+    }
+
+    initRenderSize ({width, height}: ISize) {
+        if (width === this.width && height === this.height) {
+            return;
+        }
+        this.width = width;
+        this.height = height;
+        this.rate = width / height;
+        this.processImageData = new ImageData(width, height);
+        if (this.canvas) {
+            this.canvas.width = width;
+            this.canvas.height = height;
+        }
     }
 
     onLoaded (listener: IEventReadyListener) {
@@ -64,17 +89,28 @@ export class Renderer {
         this.loader.traverseImage((point) => {
             const rgba = this.loader.getRgbaByPoint(point);
             const array = callback(rgba, point);
-            this.processImageData.data.set(array, offset);
+            this.setProcessImageData(array, offset);
             offset += array.length;
         });
 
         this.putProcessDataIntoCanvas();
     }
 
-    setImageData (data: Uint8Array) {
-        this.processImageData.data.set(data, 0);
+    setImageData (data: Uint8Array | number[]) {
+        this.setProcessImageData(data, 0);
         this.putProcessDataIntoCanvas();
     }
+
+    private setProcessImageData (data: Uint8Array | number[], offset: number) {
+        this.processImageData.data.set(data, offset);
+    }
+
+    // private setSinglePointProcessImageData (point: IPoint, rgba: IRGBA) {
+    //     this.setProcessImageData(
+    //         rgbaToColorArray(rgba),
+    //         pointToIndex(point, this.width)
+    //     );
+    // }
 
     private putProcessDataIntoCanvas () {
         this.context.putImageData(this.processImageData, 0, 0);
@@ -120,16 +156,16 @@ export class Renderer {
                 block,
                 callback: (point) => {
                     const offset = this.loader.countOffsetByPoint(point);
-                    this.processImageData.data.set(rgbaArray, offset);
+                    this.setProcessImageData(rgbaArray, offset);
                 }
             });
         });
         this.putProcessDataIntoCanvas();
     }
 
-    blur (radio = 5) {
+    blur (radius = 5) {
         this.traverse((rgba, point) => {
-            const block = this.loader.getBlockByCenterPoint({point, radio});
+            const block = this.loader.getBlockByCenterPoint({point, radius});
             const aveRgba = this.loader.countBlockAverageRgba(block);
             return rgbaToColorArray(aveRgba);
         });
@@ -148,25 +184,25 @@ export class Renderer {
         this.downloadLink.click();
     }
 
-    gaussBlur2 (radio = 5) {
-        const gaussMap = gaussFunc(radio);
-        const asmLoader = window.asmLoader;
-        const newImageData: Uint8Array = asmLoader.transform.asmU8ArrToU8Arr(
-            asmLoader.module.gaussBlur(
-                asmLoader.transform.arrToAsmF32Arr(gaussMap),
-                asmLoader.transform.arrToAsmU8Arr(this.loader.imageData.data),
-                this.width,
-                this.height,
-                radio
-            )
-        );
-        this.setImageData(newImageData);
-    }
+    // gaussBlur2 (radius = 5) {
+    //     const gaussMap = gaussFunc(radius);
+    //     const asmLoader = window.asmLoader;
+    //     const newImageData: Uint8Array = asmLoader.transform.asmU8ArrToU8Arr(
+    //         asmLoader.module.gaussBlur(
+    //             asmLoader.transform.arrToAsmF32Arr(gaussMap),
+    //             asmLoader.transform.arrToAsmU8Arr(this.loader.imageData.data),
+    //             this.width,
+    //             this.height,
+    //             radius
+    //         )
+    //     );
+    //     this.setImageData(newImageData);
+    // }
 
-    gaussBlur (radio = 5) {
-        const gaussMap = gaussFunc(radio);
+    gaussBlur (radius = 5) {
+        const gaussMap = gaussFunc(radius);
         this.traverse((rgba, point) => {
-            const block = this.loader.getBlockByCenterPoint({point, radio, checkOutBorder: false});
+            const block = this.loader.getBlockByCenterPoint({point, radius, checkOutBorder: false});
             const rgbaSum: IRGBA = {r: 0, g: 0, b: 0, a: 0};
             traverseBlock({
                 block,
@@ -197,6 +233,7 @@ export class Renderer {
             }
         });
     }
+    
     replaceColorWithImage ({
         target, image, throsold = 50
     }: {
@@ -217,5 +254,62 @@ export class Renderer {
                 });
             }
         });
+    }
+
+    private formatSize (size: IOptionSize): ISize {
+        const isWidthNum = typeof size.width === 'number';
+        const isHeightNum = typeof size.height === 'number';
+        if (!isWidthNum && !isHeightNum) {
+            return {
+                width: this.originWidth,
+                height: this.originHeight
+            };
+        } else if (isWidthNum && isHeightNum) {
+        } else if (isWidthNum) {
+            size.height = Math.round((size.width as number) / this.rate);
+        } else {
+            size.width = Math.round((size.height as number) * this.rate);
+        }
+        return size as ISize;
+    }
+
+    setImageSize (optionSize: IOptionSize) {
+        const size = this.formatSize(optionSize);
+        const xMap = countScaleMap(this.originWidth, size.width);
+        const yMap = countScaleMap(this.originHeight, size.height);
+        this.initRenderSize(size);
+        const data: number[] = [];
+        traverseBlock({
+            block: {
+                start: {x: 1, y: 1},
+                end: {x: size.width, y: size.height}
+            },
+            callback: (point) => {
+                const xIndex = point.x - 1;
+                const yIndex = point.y - 1;
+                const block: IBlock = {
+                    start: {x: xMap[xIndex][0], y: yMap[yIndex][0]},
+                    end: {x: xMap[xIndex][1], y: yMap[yIndex][1]}
+                };
+                data.push(...rgbaToColorArray(this.loader.countBlockAverageRgba(block)));
+            }
+        });
+        this.setImageData(data);
+    }
+
+    setImageScale (scale: number) {
+        this.setImageScaleXY({x: scale, y: scale});
+    }
+
+    setImageScaleXY ({x, y}: IPoint) {
+        this.setImageSize({
+            width: this.originWidth * x,
+            height: this.originHeight * y
+        });
+    }
+
+    save () {
+        const base64 = canvasToImageBase64(this.canvas);
+        this.loader.loadImage(base64);
     }
 }

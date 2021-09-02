@@ -1,11 +1,11 @@
-import {IRGB} from './types/type';
+import {IRGB} from '../types/type';
 
 /*
  * @Author: tackchen
  * @Date: 2021-08-07 15:15:28
  * @LastEditors: tackchen
- * @LastEditTime: 2021-08-12 17:26:18
- * @FilePath: \tc-image\src\transform.ts
+ * @LastEditTime: 2021-08-29 00:36:26
+ * @FilePath: /tc-image/src/transform.ts
  * @Description: Coding something
  */
 
@@ -23,14 +23,21 @@ export function fileToImageBase64 (file: File | Blob): Promise<string> {
     });
 }
 
-export function imageUrlToImage (url: string): Promise<HTMLImageElement> {
+export function imageUrlToImage (
+    url: string,
+    imageElement?: HTMLImageElement
+): Promise<HTMLImageElement> {
     return new Promise((resolve) => {
-        const image = new Image();
-        image.crossOrigin = 'Anonymous';
-        image.onload = function () {
-            resolve(image);
+        if (!imageElement) {
+            imageElement = new Image();
+        }
+        imageElement.crossOrigin = 'Anonymous';
+        const listener = () => {
+            (imageElement as HTMLImageElement).removeEventListener('load', listener);
+            resolve(imageElement);
         };
-        image.src = url;
+        imageElement.addEventListener('load', listener);
+        imageElement.src = url;
     });
 }
 

@@ -6,5 +6,5 @@
  * @FilePath: /tc-image/src/index.ts
  * @Description: Coding something
  */
-export {ImageLoader} from './image-loader';
-export {Renderer} from './renderer';
+export {ImageLoader} from './render/image-loader';
+export {Renderer} from './render/renderer';

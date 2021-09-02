@@ -2,10 +2,10 @@
  * @Author: tackchen
  * @Date: 2021-08-04 11:54:20
  * @LastEditors: tackchen
- * @FilePath: \tc-image\src\util.ts
+ * @FilePath: /tc-image/src/util.ts
  * @Description: Coding something
  */
-import {IPoint, IRGBA, IOnLoadedData, IRGB, IBlock} from './types/type';
+import {IPoint, IRGBA, IOnLoadedData, IRGB, IBlock} from '../types/type';
 import {imageUrlToImage, imageToCanvas, canvasToImageData} from './transform';
 
 export function pointToIndex (point: IPoint, imageWidth: number) {
@@ -90,9 +90,12 @@ export function rgbToHEX ({r, g, b}: IRGB) {
     return '#' + strR + strG + strB;
 }
 
-export async function loadImage (image: string | HTMLImageElement): Promise<IOnLoadedData> {
+export async function loadImage (
+    image: string | HTMLImageElement,
+    imageElement?: HTMLImageElement
+): Promise<IOnLoadedData> {
     if (typeof image === 'string') {
-        image = await imageUrlToImage(image);
+        image = await imageUrlToImage(image, imageElement);
     }
     const canvas = imageToCanvas(image);
     const imageData = canvasToImageData(canvas);
@@ -101,8 +104,8 @@ export async function loadImage (image: string | HTMLImageElement): Promise<IOnL
         imageData,
         imageWidth: image.width,
         imageHeight: image.height,
-        canvas,
-        canvasContext: (canvas.getContext('2d') as CanvasRenderingContext2D),
+        // canvas,
+        // canvasContext: (canvas.getContext('2d') as CanvasRenderingContext2D),
         image
     };
 }
@@ -173,4 +176,22 @@ export function extractBlockCenterPoint (block: IBlock): IPoint {
         x: (block.end.x - block.start.x) / 2 + 1,
         y: (block.end.y - block.start.y) / 2 + 1
     };
+}
+
+export function countScaleMap (size: number, targetSize: number): Array<Array<number>> {
+    const avg = size / targetSize;
+    const result: Array<Array<number>> = [];
+    let nextResult = 0, currentValue;
+    const smallToBig = (size <= targetSize);
+    for (let i = 0; i < targetSize; i++) {
+        currentValue = nextResult + 1;
+        nextResult = Math.round((i + 1) * avg);
+        // if (nextResult < 1) nextResult = 1;
+        // if (nextResult < currentValue) {nextResult = currentValue;}
+        result.push([
+            smallToBig ? nextResult : currentValue,
+            nextResult
+        ]);
+    }
+    return result;
 }

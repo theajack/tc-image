@@ -2,14 +2,22 @@
  * @Author: theajack
  * @Date: 2021-08-04 00:17:03
  * @LastEditor: theajack
- * @LastEditTime: 2021-08-13 14:23:31
+ * @LastEditTime: 2021-08-29 22:22:10
  * @Description: Coding something
- * @FilePath: \tc-image\src\types\type.d.ts
+ * @FilePath: /tc-image/src/types/type.d.ts
  */
-
+// xy平面上的点
 export interface IPoint {
     x: number;
     y: number;
+}
+// 平面上的点
+export interface I2DPoint {
+    h: number;
+    v: number;
+}
+export interface I3DPoint extends IPoint{
+    z: number;
 }
 
 export interface IBlock {
@@ -31,8 +39,6 @@ export interface IOnLoadedData {
     imageData: ImageData;
     imageWidth: number;
     imageHeight: number;
-    canvas: HTMLCanvasElement;
-    canvasContext: CanvasRenderingContext2D;
     image: HTMLImageElement;
 }
 
@@ -42,4 +48,13 @@ export interface IOnLoaded {
 
 export interface IJson<T = any> {
     [prop: string]: T;
+}
+
+export interface ISize {
+    width: number;
+    height: number;
+}
+export interface IOptionSize {
+    width?: number;
+    height?: number;
 }

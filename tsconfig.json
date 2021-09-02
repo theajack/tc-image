@@ -25,7 +25,7 @@
     },
     "include": [
         "./src/*", "public/index.ts"
-, "src/types/type.d.ts"    ],
+, "src/types/type.d.ts", "src/utils/event.ts", "src/render/render-rotater.ts", "src/render/filter.ts", "src/render/renderer.ts", "src/render/image-loader.ts", "src/utils/math.ts", "src/utils/transform.ts", "src/utils/util.ts"    ],
     "exclude": [
         "./node_modules"
     ]

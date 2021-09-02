@@ -2,12 +2,12 @@
  * @Author: tackchen
  * @Date: 2021-08-09 10:36:53
  * @LastEditors: tackchen
- * @FilePath: \tc-image\src\filter.ts
+ * @FilePath: /tc-image/src/render/filter.ts
  * @Description: Coding something
  */
 
-import {rgbToGray} from './transform';
-import {IRGBA} from './types/type';
+import {rgbToGray} from '../utils/transform';
+import {IRGBA} from '../types/type';
 
 export function reverseRGBA (rgba: IRGBA) {
     rgba.r = 255 - rgba.r;

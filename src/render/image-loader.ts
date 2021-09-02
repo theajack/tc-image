@@ -2,9 +2,9 @@
  * @Author: theajack
  * @Date: 2021-07-28 00:31:52
  * @LastEditor: theajack
- * @LastEditTime: 2021-08-12 17:56:12
+ * @LastEditTime: 2021-08-29 09:49:16
  * @Description: Coding something
- * @FilePath: \tc-image\src\image-loader.ts
+ * @FilePath: /tc-image/src/render/image-loader.ts
  */
 import {
     loadImage,
@@ -12,8 +12,10 @@ import {
     countAverageRgba,
     getRgbaByPoint,
     traverseBlock,
-} from './util';
-import {IPoint, IRGBA, IOnLoaded, IOnLoadedData, IBlock} from './types/type';
+    pointToIndex,
+} from '../utils/util';
+import {IPoint, IRGBA, IOnLoaded, IOnLoadedData, IBlock} from '../types/type';
+import {IEventReady, creatEventReady} from '../utils/event';
 
 /**
  * point 从 1,1 开始到 this.imageWidth,this.imageHeight 结束
@@ -23,44 +25,39 @@ export class ImageLoader implements IOnLoadedData {
     imageData: ImageData;
     imageWidth: number;
     imageHeight: number;
-    _loaded_list: Array<IOnLoaded>;
-    canvas: HTMLCanvasElement;
-    canvasContext: CanvasRenderingContext2D;
+    eventReady: IEventReady;
     image: HTMLImageElement;
     constructor ({
-        image, onloaded
+        image, onloaded, oninited
     }: {
         image: string | HTMLImageElement;
-        onloaded?: IOnLoaded
+        onloaded?: IOnLoaded;
+        oninited?: IOnLoaded;
     }) {
-        this._loaded_list = [];
+        this.eventReady = creatEventReady();
+        if (typeof onloaded === 'function') this.onloaded(onloaded);
         this.imageWidth = 0;
         this.imageHeight = 0;
-        loadImage(image).then(({
-            imageData, imageWidth, imageHeight, canvas, canvasContext, image
+        this.loadImage(image, (data) => {
+            if (typeof oninited === 'function') oninited(data);
+        });
+    }
+
+    loadImage (image: string | HTMLImageElement, onloaded?: IOnLoaded) {
+        loadImage(image, this.image).then(({
+            imageData, imageWidth, imageHeight, image
         }: IOnLoadedData) => {
             this.imageData = imageData;
             this.imageWidth = imageWidth;
             this.imageHeight = imageHeight;
-            this.canvas = canvas;
-            this.canvasContext = canvasContext;
             this.image = image;
-            if (typeof onloaded === 'function') {
-                onloaded(this);
-            }
-            this._loaded_list.forEach(fn => {
-                fn(this);
-            });
-            this._loaded_list = [];
+            if (typeof onloaded === 'function') onloaded(this);
+            this.eventReady.eventReady(this);
         });
     }
 
-    onloaded (fn: IOnLoaded) {
-        if (this.imageData) {
-            fn(this);
-        } else {
-            this._loaded_list.push(fn);
-        }
+    onloaded (listener: IOnLoaded) {
+        this.eventReady.onEventReady(listener);
     }
 
     // index 转 point
@@ -94,7 +91,7 @@ export class ImageLoader implements IOnLoadedData {
     }
 
     countOffsetByPoint (point: IPoint) {
-        return (point.x - 1) * 4 + (point.y - 1) * 4 * this.imageWidth;
+        return pointToIndex(point, this.imageWidth);
     }
 
     traverseImageByBlock (
@@ -136,18 +133,18 @@ export class ImageLoader implements IOnLoadedData {
     }
 
     getBlockByCenterPoint ({
-        point, radio, checkOutBorder = true
+        point, radius, checkOutBorder = true
     }: {
-        point: IPoint, radio: number, checkOutBorder?: boolean
+        point: IPoint, radius: number, checkOutBorder?: boolean
     }): IBlock {
         return {
             start: this.checkOutLeftTopBorder({
-                x: point.x - radio,
-                y: point.y - radio,
+                x: point.x - radius,
+                y: point.y - radius,
             }, checkOutBorder),
             end: this.checkOutRightBottomBorder({
-                x: point.x + radio,
-                y: point.y + radio,
+                x: point.x + radius,
+                y: point.y + radius,
             }, checkOutBorder)
         };
     }

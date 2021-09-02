@@ -2,7 +2,8 @@ import {Renderer} from '../src';
 import {asmLoader} from '../src/wasm/loader';
 import '../src/utils/time-log';
 
-const SRC = '/img2.jpeg';
+// const SRC = '/photo.jpg';
+const SRC = '/img.jpeg';
 // const loader = new ImageLoader({src: SRC});
 
 declare global{
@@ -34,20 +35,24 @@ export async function testAsmScript () {
 export function main () {
 
     const render = new Renderer({
-        image: SRC
+        image: SRC,
+        oninited () {
+            const width = '400px';
+    
+            const loader = render.loader;
+            loader.image.style.width = width;
+            document.body.appendChild(loader.image);
+    
+            // const img = document.createElement('img');
+            // img.src = '/bg.jpg';
+            // img.style.width = width;
+            // document.body.appendChild(img);
+            
+            render.canvas.style.width = width;
+    
+            document.body.appendChild(render.canvas);
+        }
     });
 
-    render.onLoaded(() => {
-        const width = '400px';
-
-        const loader = render.loader;
-        loader.image.style.width = width;
-        document.body.appendChild(loader.image);
-        
-        render.canvas.style.width = width;
-
-        document.body.appendChild(render.canvas);
-
-    });
     window.render = render;
 }
