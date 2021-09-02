@@ -2,7 +2,7 @@
  * @Author: theajack
  * @Date: 2021-08-04 00:17:03
  * @LastEditor: theajack
- * @LastEditTime: 2021-08-29 22:22:10
+ * @LastEditTime: 2021-09-03 00:29:48
  * @Description: Coding something
  * @FilePath: /tc-image/src/types/type.d.ts
  */
@@ -18,6 +18,8 @@ export interface I2DPoint {
 }
 export interface I3DPoint extends IPoint{
     z: number;
+}
+export interface I3DDeg extends I3DPoint{
 }
 
 export interface IBlock {

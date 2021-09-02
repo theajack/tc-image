@@ -12,13 +12,13 @@
  */
 
 import {Renderer} from './renderer';
-import {I3DPoint, IPoint, ISize, IBlock, IJson, IRGBA} from '../types/type';
+import {IPoint, ISize, IBlock, IJson, IRGBA, I3DDeg} from '../types/type';
 import {rotate3DPoint} from '../utils/math';
 import {traverseBlock, countAverageRgba, rgbaToColorArray} from '../utils/util';
 
 export class Rotater {
     render: Renderer;
-    deg: I3DPoint;
+    deg: I3DDeg;
     
     constructor (render: Renderer) {
         this.render = render;

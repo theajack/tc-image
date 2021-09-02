@@ -6,7 +6,7 @@
  * @Description: Coding something
  */
 
-import {IBlock, IPoint, I3DPoint, I2DPoint} from '../types/type';
+import {IBlock, IPoint, I3DPoint, I2DPoint, I3DDeg} from '../types/type';
 import {extractBlockCenterPoint, extractBlockXArray, traverseBlock} from './util';
 
 // 使用原生比使用数组的速度更快
@@ -123,8 +123,8 @@ export function rotatePoint (point: I2DPoint, deg: number): I2DPoint {
         rad
     });
 }
-
-export function rotate3DPoint (point3D: I3DPoint, deg: I3DPoint): I3DPoint {
+window.rotate3DPoint = rotate3DPoint;
+export function rotate3DPoint (point3D: I3DPoint, deg: I3DDeg): I3DPoint {
     const result3DPoint: I3DPoint = {...point3D};
     if (deg.z !== 0) {
         // h=>x v=>y
@@ -155,7 +155,8 @@ export function rotate3DPoint (point3D: I3DPoint, deg: I3DPoint): I3DPoint {
         result3DPoint.y = xPoint.h;
         result3DPoint.z = xPoint.v;
     }
-    return mathRound3DPoint(result3DPoint);
+    return result3DPoint;
+    // return mathRound3DPoint(result3DPoint);
 }
 
 window.rotate3DPoint = rotate3DPoint;
