@@ -3,7 +3,7 @@ import {asmLoader} from '../src/wasm/loader';
 import '../src/utils/time-log';
 
 // const SRC = '/photo.jpg';
-const SRC = '/img.jpeg';
+const SRC = '/img2.jpeg';
 // const loader = new ImageLoader({src: SRC});
 
 declare global{

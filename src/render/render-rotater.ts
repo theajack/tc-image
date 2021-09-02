@@ -2,7 +2,7 @@
  * @Author: tackchen
  * @Date: 2021-08-28 22:37:16
  * @LastEditors: tackchen
- * @LastEditTime: 2021-09-03 00:16:22
+ * @LastEditTime: 2021-09-03 01:09:33
  * @FilePath: /tc-image/src/render/render-rotater.ts
  * @Description: 图片三个方向旋转
  * 垂直屏幕是z轴
@@ -13,9 +13,9 @@
 
 import {Renderer} from './renderer';
 import {IPoint, ISize, IBlock, IJson, IRGBA, I3DDeg} from '../types/type';
-import {rotate3DPoint} from '../utils/math';
+import {rotate3DPoint, mathRound3DPoint, spread2DFloatPoint} from '../utils/math';
 import {traverseBlock, countAverageRgba, rgbaToColorArray} from '../utils/util';
-
+console.log(spread2DFloatPoint);
 export class Rotater {
     render: Renderer;
     deg: I3DDeg;
@@ -53,7 +53,7 @@ export class Rotater {
         const geneKey = (point: IPoint) => `${point.x}_${point.y}`;
         // let lastColorExist = false;
         // let lastColor: IRGBA;
-        const emptyPoint: string[] = [];
+        // const emptyPoint: string[] = [];
         return {
             add: (point: IPoint, rgba: IRGBA) => {
                 const key = geneKey(point);
@@ -62,93 +62,41 @@ export class Rotater {
                 } else {
                     list[key] = countAverageRgba([list[key], rgba]);
                 }
-                //     list[key] = [];
-                // list[key].push(rgba);
             },
-            getColor: (point: IPoint, useAroundColor: boolean = true): IRGBA => {
+            getColor: (point: IPoint): IRGBA => {
                 const key = geneKey(point);
                 if (!list[key]) {
                     // if (lastColorExist) {
                     //     lastColorExist = false;
                     //     return lastColor;
                     // }
-                    emptyPoint.push(key);
-                    if (useAroundColor) {
-                        const array: IRGBA[] = [];
-                        traverseBlock({
-                            block: {
-                                start: {x: point.x - 1, y: point.y - 1},
-                                end: {x: point.x + 1, y: point.y + 1},
-                            },
-                            callback: (p) => {
-                                const pKey = geneKey(p);
-                                if (pKey === key) return;
-                                array.push(list[pKey] || bgColor);
-                            }
-                        });
-                        const color = countAverageRgba(array);
-                        list[key] = color;
-                        return color;
-                    }
+                    // emptyPoint.push(key);
+                    // if (useAroundColor) {
+                    //     const radius = 1;
+                    //     const array: IRGBA[] = [];
+                    //     traverseBlock({
+                    //         block: {
+                    //             start: {x: point.x - radius, y: point.y - radius},
+                    //             end: {x: point.x + radius, y: point.y + radius},
+                    //         },
+                    //         callback: (p) => {
+                    //             const pKey = geneKey(p);
+                    //             if (pKey === key) return;
+                    //             array.push(list[pKey] || bgColor);
+                    //         }
+                    //     });
+                    //     const color = countAverageRgba(array);
+                    //     list[key] = color;
+                    //     return color;
+                    // }
                     return bgColor;
                 }
                 // lastColor = countAverageRgba(list[key]);
                 // lastColorExist = true;
-                return list[key];
+                return list[key] as IRGBA;
             }
         };
     }
-    // private createRotateMap2 () {
-    //     const bgColor: IRGBA = {r: 255, g: 255, b: 255, a: 255};
-    //     const list: IJson<IRGBA> = {};
-    //     const geneKey = (point: IPoint) => `${point.x}_${point.y}`;
-    //     // let lastColorExist = false;
-    //     // let lastColor: IRGBA;
-    //     const emptyPoint: string[] = [];
-    //     return {
-    //         add: (point: IPoint, rgba: IRGBA) => {
-    //             const key = geneKey(point);
-    //             if (!list[key]) {
-    //                 list[key] = rgba;
-    //             } else {
-    //                 list[key] = countAverageRgba([list[key], rgba]);
-    //             }
-    //             //     list[key] = [];
-    //             // list[key].push(rgba);
-    //         },
-    //         getColor: (point: IPoint, useAroundColor: boolean = true): IRGBA => {
-    //             const key = geneKey(point);
-    //             if (!list[key]) {
-    //                 // if (lastColorExist) {
-    //                 //     lastColorExist = false;
-    //                 //     return lastColor;
-    //                 // }
-    //                 emptyPoint.push(key);
-    //                 if (useAroundColor) {
-    //                     const array: IRGBA[] = [];
-    //                     traverseBlock({
-    //                         block: {
-    //                             start: {x: point.x - 1, y: point.y - 1},
-    //                             end: {x: point.x + 1, y: point.y + 1},
-    //                         },
-    //                         callback: (p) => {
-    //                             const pKey = geneKey(p);
-    //                             if (pKey === key) return;
-    //                             array.push(list[pKey] || bgColor);
-    //                         }
-    //                     });
-    //                     const color = countAverageRgba(array);
-    //                     list[key] = color;
-    //                     return color;
-    //                 }
-    //                 return bgColor;
-    //             }
-    //             // lastColor = countAverageRgba(list[key]);
-    //             // lastColorExist = true;
-    //             return list[key];
-    //         }
-    //     };
-    // }
 
     private countPointByOrigin (point: IPoint): IPoint {
         const offsetX = this.render.originWidth / 2;
@@ -169,7 +117,11 @@ export class Rotater {
                 z: 0
             }, this.deg);
             const rgba = this.render.loader.getRgbaByPoint(point);
-            RotateMap.add(point3D, rgba);
+            spread2DFloatPoint(point3D).forEach(point => {
+                RotateMap.add(point, rgba);
+            });
+            mathRound3DPoint(point3D);
+            // RotateMap.add(point3D, rgba);
             AreaChecker.check(point3D);
         });
 

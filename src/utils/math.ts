@@ -124,7 +124,7 @@ export function rotatePoint (point: I2DPoint, deg: number): I2DPoint {
     });
 }
 window.rotate3DPoint = rotate3DPoint;
-export function rotate3DPoint (point3D: I3DPoint, deg: I3DDeg): I3DPoint {
+export function rotate3DPoint (point3D: I3DPoint, deg: I3DDeg, round: boolean = false): I3DPoint {
     const result3DPoint: I3DPoint = {...point3D};
     if (deg.z !== 0) {
         // h=>x v=>y
@@ -155,7 +155,7 @@ export function rotate3DPoint (point3D: I3DPoint, deg: I3DDeg): I3DPoint {
         result3DPoint.y = xPoint.h;
         result3DPoint.z = xPoint.v;
     }
-    return result3DPoint;
+    return round ? mathRound3DPoint(result3DPoint) : result3DPoint;
     // return mathRound3DPoint(result3DPoint);
 }
 
@@ -210,3 +210,39 @@ export function mathRound3DPoint (point: I3DPoint) {
     point.z = Math.round(point.z);
     return point;
 }
+
+export function spread2DFloatPoint (
+    point: IPoint,
+    accuracy: number = 0.5, // 精度
+):IPoint[] {
+    const spreadX = spreadNumber(point.x, accuracy);
+    const spreadY = spreadNumber(point.y, accuracy);
+    const result: IPoint[] = [];
+
+    spreadY.forEach(y => {
+        spreadX.forEach(x => {
+            result.push({x, y});
+        });
+    });
+    return result;
+}
+
+window.spread2DFloatPoint = spread2DFloatPoint;
+// accuracy 精度取值范围为0-1
+// 1表示区间内单位区间内任意点都会被展开成两个点
+// 0表示区间内单位区间内任意点只会取靠近的点
+function spreadNumber (v: number, accuracy: number = 0.5): number[] {
+    const ceil = Math.ceil(v);
+    const floor = Math.floor(v);
+    if (ceil === floor) {
+        return [floor];
+    }
+
+    const center = (floor + ceil) / 2;
+
+    if (Math.abs(v - center) < (accuracy / 2)) {
+        return [floor, ceil];
+    }
+    return [Math.round(v)];
+}
+window.spreadNumber = spreadNumber;
