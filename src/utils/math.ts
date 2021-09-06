@@ -163,7 +163,11 @@ window.rotate3DPoint = rotate3DPoint;
 
 
 export function countRadius (point: I2DPoint) {
-    return Math.sqrt(point.h * point.h + point.v * point.v);
+    return sqrtSquareSum(point.h, point.v);
+}
+
+export function sqrtSquareSum (a: number, b: number) {
+    return Math.sqrt(a * a + b * b);
 }
 
 export function countPointByDeg ({
@@ -246,3 +250,19 @@ function spreadNumber (v: number, accuracy: number = 0.5): number[] {
     return [Math.round(v)];
 }
 window.spreadNumber = spreadNumber;
+
+export function isSameSign (
+    a: number,
+    b: number,
+    zero: boolean = false, // zero = true 表示任何数都与0同号
+): boolean {
+    return zero ? (a * b >= 0) : (a * b > 0);
+}
+
+export function isEvenNumber (value: number) {
+    return !isOddNumber(value);
+}
+
+export function isOddNumber (value: number) {
+    return value % 2 === 1;
+}

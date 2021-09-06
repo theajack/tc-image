@@ -2,13 +2,13 @@
  * @Author: theajack
  * @Date: 2021-08-12 23:46:36
  * @LastEditor: theajack
- * @LastEditTime: 2021-08-13 01:00:32
+ * @LastEditTime: 2021-09-05 00:42:18
  * @Description: Coding something
- * @FilePath: \tc-image\src\geometry\draw\canvas.ts
+ * @FilePath: /tc-image/src/geometry/draw/canvas.ts
  */
-import {createEmptyCanvas} from '../../transform';
 import {IDrawStyle} from '../../types/draw';
 import {IPoint} from '../../types/graph';
+import {createEmptyCanvas} from '../../utils/transform';
 
 export class Canvas {
     width: number;

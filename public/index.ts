@@ -1,6 +1,11 @@
 import {Renderer} from '../src';
 import {asmLoader} from '../src/wasm/loader';
 import '../src/utils/time-log';
+import {Line} from '../src/geometry/graph/line';
+import {Polygon} from '../src/geometry/graph/polygon';
+
+window.Line = Line;
+window.Polygon = Polygon;
 
 // const SRC = '/photo.jpg';
 const SRC = '/img2.jpeg';

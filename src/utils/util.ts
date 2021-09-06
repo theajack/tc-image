@@ -2,7 +2,7 @@
  * @Author: tackchen
  * @Date: 2021-08-04 11:54:20
  * @LastEditors: tackchen
- * @FilePath: /tc-image/src/util.ts
+ * @FilePath: /tc-image/src/utils/util.ts
  * @Description: Coding something
  */
 import {IPoint, IRGBA, IOnLoadedData, IRGB, IBlock} from '../types/type';
@@ -177,7 +177,7 @@ export function extractBlockCenterPoint (block: IBlock): IPoint {
         y: (block.end.y - block.start.y) / 2 + 1
     };
 }
-
+// 计算图像缩放之后像素点的对应位置
 export function countScaleMap (size: number, targetSize: number): Array<Array<number>> {
     const avg = size / targetSize;
     const result: Array<Array<number>> = [];
@@ -194,4 +194,8 @@ export function countScaleMap (size: number, targetSize: number): Array<Array<nu
         ]);
     }
     return result;
+}
+
+export function clone<T = object> (value: object): T {
+    return Object.assign({}, value) as T;
 }

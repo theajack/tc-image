@@ -1,11 +1,17 @@
+
+
 /*
  * @Author: theajack
  * @Date: 2021-08-12 23:50:40
  * @LastEditor: theajack
- * @LastEditTime: 2021-08-12 23:50:49
+ * @LastEditTime: 2021-09-06 22:08:28
  * @Description: Coding something
- * @FilePath: \tc-image\src\geometry\graph\graph.d.ts
+ * @FilePath: /tc-image/src/types/graph.d.ts
  */
+export interface IStartEnd {
+    start: IPoint;
+    end: IPoint
+}
 
 export interface IPoint {
     x: number;
@@ -14,9 +20,7 @@ export interface IPoint {
 
 export interface IPoints extends Array<IPoint> {}
 
-export interface IRect {
-    start: IPoint;
-    end: IPoint;
+export interface IRect extends IStartEnd {
 }
 
 export interface ICircle {
@@ -24,13 +28,9 @@ export interface ICircle {
     radius: number;
 }
 
-export interface ILine {
-    start: IPoint;
-    end: IPoint
-    isIntersectAnthorLine(line: ILine): boolean;
+export interface ILine extends IStartEnd {
 }
 
 export interface IPolygon {
     points: Array<IPoint>;
-    isContainPoint(point: IPoint): boolean;
 }

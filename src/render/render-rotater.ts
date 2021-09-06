@@ -2,7 +2,7 @@
  * @Author: tackchen
  * @Date: 2021-08-28 22:37:16
  * @LastEditors: tackchen
- * @LastEditTime: 2021-09-03 01:09:33
+ * @LastEditTime: 2021-09-05 00:35:53
  * @FilePath: /tc-image/src/render/render-rotater.ts
  * @Description: 图片三个方向旋转
  * 垂直屏幕是z轴
@@ -15,13 +15,18 @@ import {Renderer} from './renderer';
 import {IPoint, ISize, IBlock, IJson, IRGBA, I3DDeg} from '../types/type';
 import {rotate3DPoint, mathRound3DPoint, spread2DFloatPoint} from '../utils/math';
 import {traverseBlock, countAverageRgba, rgbaToColorArray} from '../utils/util';
-console.log(spread2DFloatPoint);
+// console.log(spread2DFloatPoint);
 export class Rotater {
     render: Renderer;
     deg: I3DDeg;
+    bgColor: IRGBA = {r: 255, g: 255, b: 255, a: 255};
     
     constructor (render: Renderer) {
         this.render = render;
+        this.initDeg();
+    }
+
+    private initDeg () {
         this.deg = {x: 0, y: 0, z: 0};
     }
 
@@ -48,7 +53,6 @@ export class Rotater {
     }
 
     private createRotateMap () {
-        const bgColor: IRGBA = {r: 255, g: 255, b: 255, a: 255};
         const list: IJson<IRGBA> = {};
         const geneKey = (point: IPoint) => `${point.x}_${point.y}`;
         // let lastColorExist = false;
@@ -89,7 +93,7 @@ export class Rotater {
                     //     list[key] = color;
                     //     return color;
                     // }
-                    return bgColor;
+                    return this.bgColor;
                 }
                 // lastColor = countAverageRgba(list[key]);
                 // lastColorExist = true;
@@ -140,16 +144,19 @@ export class Rotater {
         this.render.setImageData(newImageData);
     }
 
-    resetRotate () {
-        this.deg = {x: 0, y: 0, z: 0};
+    reset () {
+        this.initDeg();
         this.runRotate();
     }
 
     rotate3D ({
-        x = 0, y = 0, z = 0
+        x = 0, y = 0, z = 0, reset = false
     }: {
-        x?: number; y?: number; z?: number
+        x?: number; y?: number; z?: number; reset?: boolean;
     }) {
+        if (reset) {
+            this.initDeg();
+        }
         this.deg.x += x;
         this.deg.y += y;
         this.deg.z += z;
