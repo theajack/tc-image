@@ -2,9 +2,9 @@
  * @Author: theajack
  * @Date: 2021-07-28 00:31:52
  * @LastEditor: theajack
- * @LastEditTime: 2021-08-29 09:49:16
+ * @LastEditTime: 2021-09-08 22:47:54
  * @Description: Coding something
- * @FilePath: /tc-image/src/render/image-loader.ts
+ * @FilePath: \tc-image\src\render\image-loader.ts
  */
 import {
     loadImage,
@@ -16,6 +16,7 @@ import {
 } from '../utils/util';
 import {IPoint, IRGBA, IOnLoaded, IOnLoadedData, IBlock} from '../types/type';
 import {IEventReady, creatEventReady} from '../utils/event';
+import {IRect} from 'src/types/graph';
 
 /**
  * point 从 1,1 开始到 this.imageWidth,this.imageHeight 结束
@@ -151,11 +152,15 @@ export class ImageLoader implements IOnLoadedData {
 
 
     traverseImage (callback: (point: IPoint)=>void) {
+        this.traverseImageInRect({
+            start: {x: 1, y: 1},
+            end: {x: this.imageWidth, y: this.imageHeight},
+        }, callback);
+    }
+
+    traverseImageInRect (rect: IRect, callback: (point: IPoint)=>void) {
         traverseBlock({
-            block: {
-                start: {x: 1, y: 1},
-                end: {x: this.imageWidth, y: this.imageHeight},
-            },
+            block: rect,
             callback
         });
     }

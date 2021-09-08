@@ -20,4 +20,8 @@ export class Point extends Graph implements IPoint {
         this.x = point.x;
         this.y = point.y;
     }
+
+    isEqualAnotherPoint (point: IPoint) {
+        return this.x === point.x && this.y === point.y;
+    }
 }

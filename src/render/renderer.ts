@@ -6,12 +6,13 @@ import {rgbaToColorArray, rgbToColorArray, traverseBlock, countScaleMap} from '.
 import {grayRRBA, reverseRGBA} from './filter';
 import {gaussFunc} from '../utils/math';
 import {Rotater} from './render-rotater';
+import {Clipper} from './render-clipper';
 
 /*
  * @Author: tackchen
  * @Date: 2021-08-08 09:50:51
- * @LastEditors: tackchen
- * @LastEditTime: 2021-08-30 00:17:24
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-09-08 22:55:23
  * @FilePath: /tc-image/src/render/renderer.ts
  * @Description: Coding something
  */
@@ -28,6 +29,7 @@ export class Renderer {
     eventReady: IEventReady;
     processImageData: ImageData;
     rotater: Rotater;
+    clipper: Clipper;
     private downloadLink: HTMLAnchorElement;
     constructor ({
         container = '',
@@ -64,6 +66,7 @@ export class Renderer {
             }
         });
         this.rotater = new Rotater(this);
+        this.clipper = new Clipper(this);
     }
 
     initRenderSize ({width, height}: ISize) {

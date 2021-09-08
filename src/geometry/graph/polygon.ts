@@ -2,24 +2,23 @@
  * @Author: theajack
  * @Date: 2021-08-12 23:21:02
  * @LastEditor: theajack
- * @LastEditTime: 2021-09-07 01:22:57
+ * @LastEditTime: 2021-09-09 02:21:46
  * @Description: Coding something
- * @FilePath: /tc-image/src/geometry/graph/polygon.ts
+ * @FilePath: \tc-image\src\geometry\graph\polygon.ts
  */
 import {IPoint, IPolygon} from '../../types/graph';
 import {Graph} from './graph';
 import {Line} from './line';
-import {Point} from './point';
 import {clone} from '../../utils/util';
 import {Rect} from './rect';
 import {isOddNumber} from '../../utils/math';
 export class Polygon extends Graph implements IPolygon {
     
-    points: Point[];
+    points: IPoint[];
     lines: Line[];
     boundary: Rect;
 
-    constructor (points: Point[]) {
+    constructor (points: IPoint[]) {
         super();
         if (points.length < 3) {throw new Error('Wrong Polygon');};
         this.points = points;
@@ -34,6 +33,7 @@ export class Polygon extends Graph implements IPolygon {
                 end: nextPoint
             }));
         });
+        this.boundary.reinitSize();
     }
 
     private expendBoundary (point: IPoint) {
@@ -68,27 +68,80 @@ export class Polygon extends Graph implements IPolygon {
         return isOddNumber(upPointNumber) && isOddNumber(downPointNumber);
     }
 
-    countIntersectPointNumberWithLine (anthorLine: Line) {
+    countIntersectPointNumberWithLine (anotherLine: Line) {
         let sum = 0;
-        this.lines.forEach((line: Line) => {
-            if (line.isIntersectAnthorLine(anthorLine)) {
+        this.lines.forEach((line: Line, index: number) => {
+            if (this.isAnotherLineCrossEdge(anotherLine, line, index)) {
                 sum ++;
             }
         });
         return sum;
     }
 
+    private prevLine (index: number|Line): Line {
+        if (typeof index !== 'number') {
+            index = this.lines.indexOf(index);
+        }
+        return this.lines[(index === 0 ? this.lines.length : index) - 1];
+    }
+
     countIntersectPointNumberWithLines (lines: Line[]) {
         const sums: number[] = [];
-        this.lines.forEach(line => {
-            lines.forEach((anthorLine, index) => {
+        this.lines.forEach((line, lineIndex) => {
+            lines.forEach((anotherLine, index) => {
                 if (typeof sums[index] !== 'number') sums[index] = 0;
-                if (line.isIntersectAnthorLine(anthorLine)) {
+                if (this.isAnotherLineCrossEdge(anotherLine, line, lineIndex)) {
                     sums[index] ++;
                 }
             });
         });
         return sums;
+    }
+
+    isAnotherLineCrossEdge (anotherLine: Line, edge: Line, edgeIndex?: number) {
+        if (typeof edgeIndex !== 'number') edgeIndex = this.lines.indexOf(edge);
+        
+        const intersectResult = anotherLine.isIntersectAnotherLine(edge, {includeStartPoint: true});
+
+        if (intersectResult.isTrue) {
+            // 不与边的起点相交 或者 当前边终点与上一条非重合边的起点在线段两侧
+            if (
+                !intersectResult.isStartOnLine ||
+                anotherLine.isSplit2Point(this.prevLine(edgeIndex).start, edge.end).isTrue
+            ) {
+                return true;
+            }
+
+            if (intersectResult.isStartOnLine) {
+                let prevLine = this.prevLine(edgeIndex);
+                while (prevLine.isCoincideAnotherLine(anotherLine)) {
+                    prevLine = this.prevLine(prevLine);
+                }
+                if (anotherLine.isSplit2Point(prevLine.start, edge.end).isTrue) {
+                    return true;
+                }
+
+                return false;
+            }
+
+            return true;
+
+            // if(intersectResult.isStartOnLine){
+            //     return false;
+            // }
+
+            // if (!intersectResult.isStartOnLine) {
+            //     let prevLine = this.prevLine(edgeIndex);
+            //     while (prevLine.isCoincideAnotherLine(anotherLine)) {
+            //         prevLine = this.prevLine(edgeIndex);
+            //     }
+
+            //     if (anotherLine.isSplit2Point(prevLine.start, edge.end).isTrue) {
+            //         return true;
+            //     }
+            // }
+        }
+        return false;
     }
 
     // 做一条与x轴垂直的线，取其被多边形边界分成的两条线段
@@ -111,3 +164,18 @@ export class Polygon extends Graph implements IPolygon {
         };
     }
 }
+
+// const p = new Polygon([
+//     {x: 0, y: 400},
+//     {x: 400, y: 200},
+//     {x: 200, y: 400},
+//     {x: 400, y: 600}
+// ]);
+
+// p.isAnotherLineCrossEdge(
+//     {
+//         start: {x: 400, y: 400},
+//         end: {x: 400, y: 0}
+//     },
+//     p.lines[1]
+// );
