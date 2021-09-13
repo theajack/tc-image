@@ -1,21 +1,20 @@
 /*
- * @Author: theajack
- * @Date: 2021-08-12 23:19:54
- * @LastEditor: theajack
- * @LastEditTime: 2021-09-09 01:47:09
- * @Description: Coding something
- * @FilePath: \tc-image\src\geometry\graph\line.ts
- *
- * 线段
+ * @Author: tackchen
+ * @Date: 2021-09-11 16:14:03
+ * @LastEditors: tackchen
+ * @LastEditTime: 2021-09-12 17:06:51
+ * @FilePath: /tc-image/src/geometry/graph/lines/line-segment.ts
+ * @Description: 线段
  */
-import {Graph} from './graph';
-import {ILine, IPoint, IStartEnd} from '../../types/graph';
-import {Vector} from './vector';
-import {Point} from './point';
-import {isSameSign} from '../../utils/math';
-import {Rect} from './rect';
 
-export class Line extends Graph implements ILine {
+import {Graph} from '../base/graph';
+import {ILineSegment, IPoint, IStartEnd} from '../../../types/graph';
+import {Vector} from '../vector';
+import {Point} from '../points/point';
+import {isSameSign} from '../../../utils/math';
+import {Rect} from '../closed-graphs/rect';
+
+export class LineSegment extends Graph implements ILineSegment {
     
     start: Point;
     end: Point;
@@ -62,7 +61,7 @@ export class Line extends Graph implements ILine {
      * includeEndPoint: 表示是否包含目标线段line的终点在当前线段上(包含当前线段的两个端点上)
      */
     isIntersectAnotherLine (
-        line: Line,
+        lineSeg: LineSegment,
         option: {
             includeStartPoint?: boolean;
             includeEndPoint?: boolean;
@@ -73,14 +72,14 @@ export class Line extends Graph implements ILine {
         isStartOnLine: boolean;
         isEndOnLine: boolean;
     } {
-        const result = this.isSplit2Point(line.start, line.end, {
+        const result = this.isSplit2Point(lineSeg.start, lineSeg.end, {
             includeP1OnLine: option.includeStartPoint,
             includeP2OnLine: option.includeEndPoint
         });
 
         const isTrue = (
             result.isTrue &&
-            line.isSplit2Point(this.start, this.end, {includeP1OnLine: true, includeP2OnLine: true}).isTrue
+            lineSeg.isSplit2Point(this.start, this.end, {includeP1OnLine: true, includeP2OnLine: true}).isTrue
         );
         return {
             isTrue,
@@ -135,26 +134,24 @@ export class Line extends Graph implements ILine {
     }
 
     // 是否平行于另一条线段
-    isParallelAnotherLine (line: Line) {
+    isParallelAnotherLine (lineSeg: LineSegment) {
         return this.isVerticalLine ?
-            line.isVerticalLine :
-            this.slope === line.slope;
+            lineSeg.isVerticalLine :
+            this.slope === lineSeg.slope;
     }
 
     // 是否重合于另一条线段
-    isCoincideAnotherLine (line: Line) {
-        return this.isParallelAnotherLine(line) && (
+    isCoincideAnotherLine (lineSeg: LineSegment) {
+        return this.isParallelAnotherLine(lineSeg) && (
             this.isVerticalLine ?
-                this.verticalX === line.verticalX :
-                this.intercept === line.intercept
+                this.verticalX === lineSeg.verticalX :
+                this.intercept === lineSeg.intercept
         );
     }
 
     // 是否等于另一条线段
-    isEqualAnotherLine (line: ILine) {
+    isEqualAnotherLine (line: ILineSegment) {
         return this.start.isEqualAnotherPoint(line.start) &&
-        this.end.isEqualAnotherPoint(line.end);
+            this.end.isEqualAnotherPoint(line.end);
     }
 }
-
-window.Line = Line;

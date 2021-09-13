@@ -166,6 +166,7 @@ export function countRadius (point: I2DPoint) {
     return sqrtSquareSum(point.h, point.v);
 }
 
+// 求两个数的平方和 开根号
 export function sqrtSquareSum (a: number, b: number) {
     return Math.sqrt(a * a + b * b);
 }
@@ -194,6 +195,17 @@ export function countPointByRad ({
         h: radius * Math.cos(rad),
         v: radius * Math.sin(rad),
     };
+}
+
+export function parseDeg (deg: number) {
+    return deg % 360;
+}
+export function parseRad (rad: number) {
+    return rad % (2 * Math.PI);
+}
+
+export function countCircleArea (radius: number) {
+    return Math.PI * radius * radius;
 }
 
 export function mathRoundPoint (point: IPoint) {
@@ -265,4 +277,8 @@ export function isEvenNumber (value: number) {
 
 export function isOddNumber (value: number) {
     return value % 2 === 1;
+}
+
+export function count2PointDeg (p1: IPoint, p2: IPoint) {
+    return radToDeg(Math.atan2(p1.y - p2.y, p1.x - p2.x));
 }

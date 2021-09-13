@@ -6,12 +6,12 @@
  * @Description: Coding something
  * @FilePath: /tc-image/src/geometry/graph/polygon.ts
  */
-import {IPoint, IPolygon} from '../../types/graph';
-import {Graph} from './base/graph';
-import {LineSegment} from './lines/line-segment';
-import {clone} from '../../utils/util';
-import {Rect} from './closed-graphs/rect';
-import {isOddNumber} from '../../utils/math';
+import {IPoint, IPolygon} from '../../../types/graph';
+import {Graph} from '../base/graph';
+import {LineSegment} from '../lines/line-segment';
+import {clone} from '../../../utils/util';
+import {Rect} from './rect';
+import {isOddNumber} from '../../../utils/math';
 export class Polygon extends Graph implements IPolygon {
     
     points: IPoint[];

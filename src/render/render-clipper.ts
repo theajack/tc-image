@@ -1,16 +1,17 @@
 /*
  * @Author: tackchen
  * @Date: 2021-09-05 00:32:45
- * @LastEditors: Please set LastEditors
- * @LastEditTime: 2021-09-09 01:37:46
- * @FilePath: \tc-image\src\render\render-clipper.ts
+ * @LastEditors: tackchen
+ * @LastEditTime: 2021-09-11 15:47:09
+ * @FilePath: /tc-image/src/render/render-clipper.ts
  * @Description: Coding something
  */
 import {Renderer} from './renderer';
 import {IPoint, IRGBA} from '../types/type';
-import {IRect} from '../types/graph';
-import {Rect} from '../geometry/graph/rect';
-import {Polygon} from '../geometry/graph/polygon';
+import {IRect, ICircle} from '../types/graph';
+import {Rect} from '../geometry/graph/closed-graphs/rect';
+import {Polygon} from '../geometry/graph/closed-graphs/polygon';
+import {Circle} from '../geometry/graph/closed-graphs/circle';
 import {rgbaToColorArray} from '../utils/util';
 
 export class Clipper {
@@ -21,35 +22,43 @@ export class Clipper {
         this.render = render;
     }
 
-    clipRect (irect: IRect) {
-        const rect = new Rect(irect);
+    private clipBase ({
+        rect,
+        checkContainPoint,
+    }: {
+        rect: Rect
+        checkContainPoint?: (point: IPoint)=>boolean | boolean;
+    }) {
         this.render.initRenderSize(rect.size);
-
         const newImageData: number[] = [];
-        
         this.render.loader.traverseImageInRect(rect, (point) => {
-            const rgba = this.render.loader.getRgbaByPoint(point);
+            const isContain = checkContainPoint && checkContainPoint(point);
+            const rgba = isContain ? this.render.loader.getRgbaByPoint(point) : this.bgColor;
             newImageData.push(...rgbaToColorArray(rgba));
         });
-
         this.render.setImageData(newImageData);
+    }
+
+    clipRect (iRect: IRect) {
+        const rect = new Rect(iRect);
+        this.clipBase({rect});
     }
 
     clipPolygon (points: IPoint[]) {
         const polygon = new Polygon(points);
-        this.render.initRenderSize(polygon.boundary.size);
 
-        const newImageData: number[] = [];
-
-        this.render.loader.traverseImageInRect(polygon.boundary, (point) => {
-            let rgba: IRGBA;
-            if (polygon.isContainPoint(point)) {
-                rgba = this.render.loader.getRgbaByPoint(point);
-            } else {
-                rgba = this.bgColor;
-            }
-            newImageData.push(...rgbaToColorArray(rgba));
+        this.clipBase({
+            rect: polygon.boundary,
+            checkContainPoint: point => polygon.isContainPoint(point)
         });
-        this.render.setImageData(newImageData);
+    }
+
+    clipCircle (iCircle: ICircle) {
+        const circle = new Circle(iCircle);
+
+        this.clipBase({
+            rect: circle.boundary,
+            checkContainPoint: point => circle.isContainPoint(point)
+        });
     }
 }

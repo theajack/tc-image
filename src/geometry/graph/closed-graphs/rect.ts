@@ -7,9 +7,9 @@
  * @FilePath: \tc-image\src\geometry\graph\rect.ts
  */
 
-import {ISize} from 'src/types/type';
-import {IRect, IPoint, IStartEnd} from '../../types/graph';
-import {Graph} from './graph';
+import {ISize} from '../../../types/type';
+import {IRect, IPoint, IStartEnd} from '../../../types/graph';
+import {Graph} from '../base/graph';
 
 export class Rect extends Graph implements IRect {
     

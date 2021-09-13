@@ -37,3 +37,10 @@ npm run build
 
 
 node ./node_modules/onchange/dist/bin.js -i 'src/wasm/lib/**/*' -- node ./helper/build-asm.js
+
+
+备注
+
+1. 坐标系为横轴为x轴，向右为正方向，纵轴为y轴，向下为正方向，垂直于纸面为z轴，向外为正方向
+2. 图片定义起始坐标为（1，1） 结束坐标为（width，height）width、height分别为图片的宽高像素数
+3. 极坐标定义水平朝右为0度，顺时针方向为正方向，竖直的角度（0-360）

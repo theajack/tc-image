@@ -1,11 +1,13 @@
 import {Renderer} from '../src';
 import {asmLoader} from '../src/wasm/loader';
 import '../src/utils/time-log';
-import {Line} from '../src/geometry/graph/line';
-import {Polygon} from '../src/geometry/graph/polygon';
+import {LineSegment} from '../src/geometry/graph/lines/line-segment';
+import {Polygon} from '../src/geometry/graph/closed-graphs/polygon';
+import {Circle} from '../src/geometry/graph/closed-graphs/circle';
 
-window.Line = Line;
+window.LineSegment = LineSegment;
 window.Polygon = Polygon;
+window.Circle = Circle;
 
 // const SRC = '/photo.jpg';
 const SRC = '/img2.jpeg';
